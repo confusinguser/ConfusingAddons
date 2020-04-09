@@ -1,0 +1,16 @@
+[
+{
+  "modid": "CHANGEME",
+  "name": "CHANGEME",
+  "description": "",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["ConfusingUser"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]
