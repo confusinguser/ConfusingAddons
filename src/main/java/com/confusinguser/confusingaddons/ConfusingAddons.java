@@ -13,11 +13,12 @@ import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 
 @Mod(modid = ConfusingAddons.MODID, version = ConfusingAddons.VERSION, name = ConfusingAddons.MOD_NAME, clientSideOnly = true, acceptedMinecraftVersions = "[1.8.9]")
 public class ConfusingAddons {
-	public static final String MODID = "confusingaddons";
+	public static final String MODID = "ConfusingAddons";
 	public static final String VERSION = "1.0";
 	public static final String MOD_NAME = "ConfusingAddons";
 
@@ -29,9 +30,10 @@ public class ConfusingAddons {
 
 	@Mod.EventHandler
 	public void preInit(FMLPreInitializationEvent e) {
+		logger = e.getModLog();
 		instance = this;
 		configValues = new ConfigValues(this, e.getSuggestedConfigurationFile());
-		logger = e.getModLog();
+		configValues.loadConfig();
 	}
 
 	@Mod.EventHandler

@@ -33,7 +33,9 @@ public class ConfigValues {
 	}
 
 	public void loadConfig() {
+		main.logger.info("loadconfig()");
 		if (settingsConfigFile.exists()) {
+			main.logger.info("file exisits");
 			try {
 				JsonElement fileElement;
 				try (FileReader reader = new FileReader(settingsConfigFile)) {
@@ -44,10 +46,12 @@ public class ConfigValues {
 					throw new JsonParseException("File is null!");
 				}
 				settingsConfig = fileElement.getAsJsonObject();
+				main.logger.info("Setting features");
 				for (Feature feature : Feature.values()) {
 					if (settingsConfig.has(feature.getId())) {
 						feature.setStatus(settingsConfig.get(feature.getId()).getAsBoolean());
 					}
+					main.logger.info("Feature: " + feature.toString() + ", enabled: " + feature.getId());
 				}
 
 			} catch (JsonParseException | IllegalStateException | IOException ex) {
@@ -55,6 +59,8 @@ public class ConfigValues {
 				main.logger.warn(Arrays.toString(ex.getStackTrace()));
 				saveConfig();
 			}
+		} else {
+			saveConfig();
 		}
 	}
 
@@ -64,7 +70,6 @@ public class ConfigValues {
 
 		try {
 			settingsConfigFile.createNewFile();
-			main.logger.error("[ConfusingAddons] An error occurred while attempting to create the config file!");
 
 			for (Feature feature: Feature.values()) {
 				JsonObject jsonObject = new JsonObject();
