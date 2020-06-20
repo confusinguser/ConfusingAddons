@@ -1,92 +1,88 @@
 package com.confusinguser.confusingaddons.utils;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintStream;
-
-import org.apache.logging.log4j.Logger;
-
 import com.confusinguser.confusingaddons.ConfusingAddons;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
-
+import com.google.gson.*;
 import scala.actors.threadpool.Arrays;
+
+import java.io.*;
 
 public class ConfigValues {
 
-	private static final int CONFIG_VERSION = 1;
+    private static final int CONFIG_VERSION = 1;
 
-	private ConfusingAddons main;
+    private final ConfusingAddons main;
 
-	private File settingsConfigFile;
-	private JsonObject settingsConfig = new JsonObject();
+    private final File settingsConfigFile;
+    private JsonObject settingsConfig = new JsonObject();
 
-	public ConfigValues(ConfusingAddons main, File settingsConfigFile) {
-		this.main = main;
-		this.settingsConfigFile = settingsConfigFile;
-	}
+    public ConfigValues(ConfusingAddons main, File settingsConfigFile) {
+        this.main = main;
+        this.settingsConfigFile = settingsConfigFile;
+    }
 
-	public void loadConfig() {
-		main.logger.info("loadconfig()");
-		if (settingsConfigFile.exists()) {
-			main.logger.info("file exisits");
-			try {
-				JsonElement fileElement;
-				try (FileReader reader = new FileReader(settingsConfigFile)) {
-					fileElement = new JsonParser().parse(reader);
-				}
+    public void loadConfig() {
+        if (settingsConfigFile.exists()) {
+            try {
+                JsonElement fileElement;
+                try (FileReader reader = new FileReader(settingsConfigFile)) {
+                    fileElement = new JsonParser().parse(reader);
+                }
 
-				if (fileElement == null || fileElement.isJsonNull()) {
-					throw new JsonParseException("File is null!");
-				}
-				settingsConfig = fileElement.getAsJsonObject();
-				main.logger.info("Setting features");
-				for (Feature feature : Feature.values()) {
-					if (settingsConfig.has(feature.getId())) {
-						feature.setStatus(settingsConfig.get(feature.getId()).getAsBoolean());
-					}
-					main.logger.info("Feature: " + feature.toString() + ", enabled: " + feature.getId());
-				}
+                if (fileElement == null || fileElement.isJsonNull()) {
+                    throw new JsonParseException("File is null!");
+                }
+                settingsConfig = fileElement.getAsJsonObject();
+                for (Feature feature : Feature.values()) {
+                    feature.status = settingsConfig.get("status").getAsJsonArray().get(feature.getId()).getAsJsonObject().get(feature.getIdString()).getAsBoolean();
+                }
+                try {
+                    main.setApiKey(settingsConfig.get("apikey").getAsString(), false);
+                } catch (IllegalArgumentException ignored) {
+                }
 
-			} catch (JsonParseException | IllegalStateException | IOException ex) {
-				main.logger.warn("There was an error loading the config. Resetting all settings to default.");
-				main.logger.warn(Arrays.toString(ex.getStackTrace()));
-				saveConfig();
-			}
-		} else {
-			saveConfig();
-		}
-	}
+            } catch (IllegalStateException | IOException ex) {
+                main.logger.warn("There was an error loading the config. Resetting all settings to default.");
+                main.logger.warn(Arrays.toString(ex.getStackTrace()));
+                setAllFeaturesToDefault();
+                saveConfig();
+            } catch (JsonParseException | IndexOutOfBoundsException ex) {
+                main.logger.warn("Old version of mod detected, updating config");
+                saveConfig();
+            }
+        } else {
+            setAllFeaturesToDefault();
+            saveConfig();
+        }
+    }
 
-	public void saveConfig() {
-		settingsConfig = new JsonObject();
-		JsonArray status = new JsonArray();
+    private void setAllFeaturesToDefault() {
+        for (Feature feature : Feature.values()) feature.status = false;
+    }
 
-		try {
-			settingsConfigFile.createNewFile();
+    public void saveConfig() {
+        settingsConfig = new JsonObject();
+        JsonArray status = new JsonArray();
 
-			for (Feature feature: Feature.values()) {
-				JsonObject jsonObject = new JsonObject();
-				jsonObject.addProperty(feature.getId(), feature.getStatus());
-				status.add(jsonObject);
-			}
+        try {
+            settingsConfigFile.createNewFile();
 
-			settingsConfig.add("status", status);
-			settingsConfig.addProperty("configVersion", CONFIG_VERSION);
+            for (Feature feature : Feature.values()) {
+                JsonObject jsonObject = new JsonObject();
+                jsonObject.addProperty(feature.getIdString(), feature.isEnabled());
+                status.add(jsonObject);
+            }
 
-			try (FileWriter writer = new FileWriter(settingsConfigFile);
-					BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
-				bufferedWriter.write(settingsConfig.toString());
-			}
-		} catch (IOException ex) {
-			main.logger.error("[ConfusingAddons] An error occurred while attempting to save the config!");
-			main.logger.error(ex.getMessage(), ex);
-		}
-	}
+            settingsConfig.add("status", status);
+            settingsConfig.addProperty("configVersion", CONFIG_VERSION);
+            settingsConfig.addProperty("apikey", main.getApiKey());
+
+            try (FileWriter writer = new FileWriter(settingsConfigFile);
+                 BufferedWriter bufferedWriter = new BufferedWriter(writer)) {
+                bufferedWriter.write(settingsConfig.toString());
+            }
+        } catch (IOException ex) {
+            main.logger.error("[ConfusingAddons] An error occurred while attempting to save the config!");
+            main.logger.error(ex.getMessage(), ex);
+        }
+    }
 }

@@ -3,47 +3,52 @@ package com.confusinguser.confusingaddons.utils;
 import com.confusinguser.confusingaddons.ConfusingAddons;
 
 public enum Feature {
-	HIDE_LOBBY_SPAM(0),
-	SHOW_CLICK_COMMANDS(1),
-	HIDE_JOIN_LEAVE_MESSAGES(2),
-	CLEANER_KICK_ERROR_MESSAGES(3),
-	SHOW_FORMATTING_CODES(4);
-	
-	private boolean status;
-	private long id;
-	
-	private Feature(long id) {
-		this.id = id;
-	}
-	
-	public void setStatus(boolean status) {
-		this.status = status;
-		ConfusingAddons.getInstance().getConfigValues().saveConfig();
-	}
+    HIDE_LOBBY_SPAM,
+    SHOW_CLICK_COMMANDS,
+    HIDE_JOIN_LEAVE_MESSAGES,
+    CLEANER_KICK_ERROR_MESSAGES,
+    SHOW_QUEUE_ESIMATE,
+    SHOW_FORMATTING_CODES,
+    COPY_NBT,
+    AUTO_OPEN_MADDOX_GUI,
+    SWITCH_TO_BATPHONE_ON_SLAYER_DONE;
+    // TODO Autoclicker
 
-	public boolean getStatus() {
-		return status;
-	}
+    protected boolean status;
 
-	public long getIdLong() {
-		return id;
-	}
-	
-	public String getId() {
-		return String.valueOf(id);
-	}
-	
-	public static Feature getFeatureById(long id) {
-		for (Feature feature : values()) {
-			if (feature.getIdLong() == id) return feature;
-		}
-		return null;
-	}
-	
-	public static Feature getFeatureById(String id) {
-		for (Feature feature : values()) {
-			if (feature.getId().contentEquals(id)) return feature;
-		}
-		return null;
-	}
+    public static Feature getFeatureById(int id) {
+        for (Feature feature : values()) {
+            if (feature.getId() == id) return feature;
+        }
+        return null;
+    }
+
+    public static Feature getFeatureById(String id) {
+        for (Feature feature : values()) {
+            if (feature.getIdString().contentEquals(id)) return feature;
+        }
+        return null;
+    }
+
+    public boolean isEnabled() {
+        return status;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+        ConfusingAddons.getInstance().getConfigValues().saveConfig();
+    }
+
+    public int getId() {
+        int index = 0;
+        for (Feature feature : values()) {
+            if (feature.equals(this)) return index;
+            index++;
+        }
+        return -1;
+    }
+
+    public String getIdString() {
+        return String.valueOf(getId());
+    }
 }
