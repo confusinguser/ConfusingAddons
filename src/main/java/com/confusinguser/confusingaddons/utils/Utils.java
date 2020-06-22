@@ -9,6 +9,8 @@ import net.minecraft.entity.Entity;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.network.play.server.S02PacketChat;
 import net.minecraft.util.*;
+import org.lwjgl.input.Keyboard;
+import org.lwjgl.input.Mouse;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -187,7 +189,7 @@ public class Utils {
 
     public void handleInvalidApiKey() {
         sendMessageToPlayer("Your API key was invalid and was removed\n§cTo generate a new one, type §b'/api new'", EnumChatFormatting.RED);
-        ConfusingAddons.getInstance().disableHypixelAPI();
+        ConfusingAddons.getInstance().resetAPIKey();
     }
 
     public String getSystemClipboardContents() {
@@ -196,6 +198,20 @@ public class Utils {
             return clipboard == null ? "" : (String) clipboard.getTransferData(DataFlavor.stringFlavor);
         } catch (UnsupportedFlavorException | IOException e) {
             return "";
+        }
+    }
+
+    public boolean isKeyOrMouseButtonDown(int keyOrButtonCode) {
+        try {
+            return Keyboard.isKeyDown(keyOrButtonCode);
+        } catch (IndexOutOfBoundsException ex) {
+            try {
+                return Mouse.isButtonDown(keyOrButtonCode);
+            } catch (IndexOutOfBoundsException exception) {
+                ConfusingAddons.getInstance().logger.error("Error at function isKeyOrMouseButtonDown() with keyOrButtonCode " + keyOrButtonCode);
+                ConfusingAddons.getInstance().logger.error(exception);
+                return false;
+            }
         }
     }
 }

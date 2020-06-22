@@ -15,7 +15,6 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
-import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
 
 import java.awt.*;
@@ -37,6 +36,8 @@ public class EventListener {
     public int leftCPS;
     public int rightCPS;
 
+    private boolean releaseUseItemButtonNextTick;
+    private boolean releaseAttackButtonNextTick;
 
     public EventListener(ConfusingAddons main) {
         this.main = main;
@@ -95,7 +96,7 @@ public class EventListener {
         Vec3 playerPos = mc.thePlayer.getPositionVector();
         if (main.keyBindings[1].isKeyDown() && (main.getUtils().distanceToCenterPlaneBlock(new BlockPos(playerPos).down(), playerPos) > (10 - speedBridgeSecurity) / 20d || mc.theWorld.getBlockState(new BlockPos(playerPos).down()).getBlock().getMaterial() == Material.air) && mc.currentScreen == null) {
             KeyBinding.setKeyBindState(mc.gameSettings.keyBindSneak.getKeyCode(), true);
-        } else if (mc.gameSettings.keyBindSneak.isKeyDown() && !Keyboard.isKeyDown(mc.gameSettings.keyBindSneak.getKeyCode())) {
+        } else if (mc.gameSettings.keyBindSneak.isKeyDown() && !main.getUtils().isKeyOrMouseButtonDown(mc.gameSettings.keyBindSneak.getKeyCode())) {
             KeyBinding.setKeyBindState(mc.gameSettings.keyBindSneak.getKeyCode(), false);
         }
 
@@ -123,21 +124,25 @@ public class EventListener {
             }
         }
 
-        if (mc.gameSettings.keyBindUseItem.isKeyDown() && !Keyboard.isKeyDown(mc.gameSettings.keyBindUseItem.getKeyCode())) {
-            KeyBinding.setKeyBindState(mc.gameSettings.keyBindUseItem.getKeyCode(), false);
+        if (releaseAttackButtonNextTick) {
+            KeyBinding.setKeyBindState(mc.gameSettings.keyBindAttack.getKeyCode(), false);
+            releaseAttackButtonNextTick = false;
         }
 
-        if (mc.gameSettings.keyBindAttack.isKeyDown() && !Keyboard.isKeyDown(mc.gameSettings.keyBindAttack.getKeyCode())) {
-            KeyBinding.setKeyBindState(mc.gameSettings.keyBindAttack.getKeyCode(), false);
+        if (releaseUseItemButtonNextTick) {
+            KeyBinding.setKeyBindState(mc.gameSettings.keyBindUseItem.getKeyCode(), false);
+            releaseUseItemButtonNextTick = false;
         }
 
         if (main.keyBindings[2].isKeyDown() && autoClickerTickCounter % (20d / leftCPS) == 0) {
             KeyBinding.setKeyBindState(mc.gameSettings.keyBindAttack.getKeyCode(), true);
+            releaseAttackButtonNextTick = true;
             mc.clickMouse();
         }
 
-        if (!main.keyBindings[2].isKeyDown() && main.keyBindings[3].isKeyDown() && autoClickerTickCounter % (20d / rightCPS) == 0) {
+        if (!main.keyBindings[2].isKeyDown() && main.keyBindings[3].isKeyDown() && autoClickerTickCounter % (20 / rightCPS) == 0) {
             KeyBinding.setKeyBindState(mc.gameSettings.keyBindUseItem.getKeyCode(), true);
+            releaseUseItemButtonNextTick = true;
             mc.rightClickMouse();
         }
 

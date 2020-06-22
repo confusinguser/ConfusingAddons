@@ -56,6 +56,10 @@ public class ConfusingAddonsCommand extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
+        if (args.length == 0) {
+            main.getUtils().sendMessageToPlayer("Invalid argument!", EnumChatFormatting.RED);
+            return;
+        }
         if (args[0].equalsIgnoreCase("hidejoinleavemessages")) {
             boolean status;
             if (args.length == 1) {
@@ -147,6 +151,7 @@ public class ConfusingAddonsCommand extends CommandBase {
                         int speedBridgeSecurity = Integer.parseInt(args[2]);
                         if (speedBridgeSecurity <= 10 && speedBridgeSecurity >= 0) {
                             main.getPlayerListener().speedBridgeSecurity = speedBridgeSecurity;
+                            main.getConfigValues().saveConfig();
                             main.getUtils().sendMessageToPlayer("Speedbridge security is now set to " + args[2], EnumChatFormatting.GREEN);
                         } else {
                             main.getUtils().sendMessageToPlayer("Security value has to be in between 0 and 10", EnumChatFormatting.RED);
@@ -168,6 +173,7 @@ public class ConfusingAddonsCommand extends CommandBase {
                         if (leftCPS <= 20 && leftCPS >= 0) {
                             main.getPlayerListener().leftCPS = leftCPS;
                             main.getUtils().sendMessageToPlayer("CPS is now set to " + args[2], EnumChatFormatting.GREEN);
+                            main.getConfigValues().saveConfig();
                         } else {
                             main.getUtils().sendMessageToPlayer("CPS must be in between 0 and 20", EnumChatFormatting.RED);
                         }
@@ -187,6 +193,7 @@ public class ConfusingAddonsCommand extends CommandBase {
                         int rightCPS = Integer.parseInt(args[2]);
                         if (rightCPS <= 20 && rightCPS >= 0) {
                             main.getPlayerListener().rightCPS = rightCPS;
+                            main.getConfigValues().saveConfig();
                             main.getUtils().sendMessageToPlayer("CPS is now set to " + args[2], EnumChatFormatting.GREEN);
                         } else {
                             main.getUtils().sendMessageToPlayer("CPS must be in between 0 and 20", EnumChatFormatting.RED);

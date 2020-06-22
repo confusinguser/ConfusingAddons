@@ -35,17 +35,25 @@ public class ConfigValues {
                 for (Feature feature : Feature.values()) {
                     feature.status = settingsConfig.get("status").getAsJsonArray().get(feature.getId()).getAsJsonObject().get(feature.getIdString()).getAsBoolean();
                 }
+
                 try {
                     main.setApiKey(settingsConfig.get("apikey").getAsString(), false);
-                } catch (IllegalArgumentException ignored) {
+                } catch (IllegalArgumentException ex) {
+                    main.logger.warn("API key is somehow malformed, resetting it...");
+                    main.resetAPIKey();
+                    saveConfig();
                 }
+
+                main.getPlayerListener().leftCPS = settingsConfig.get("leftCPS").getAsInt();
+                main.getPlayerListener().rightCPS = settingsConfig.get("rightCPS").getAsInt();
+                main.getPlayerListener().speedBridgeSecurity = settingsConfig.get("speedBridgeSecurity").getAsInt();
 
             } catch (IllegalStateException | IOException ex) {
                 main.logger.warn("There was an error loading the config. Resetting all settings to default.");
                 main.logger.warn(Arrays.toString(ex.getStackTrace()));
                 setAllFeaturesToDefault();
                 saveConfig();
-            } catch (JsonParseException | IndexOutOfBoundsException ex) {
+            } catch (JsonParseException | IndexOutOfBoundsException | NullPointerException ex) {
                 main.logger.warn("Old version of mod detected, updating config");
                 saveConfig();
             }
@@ -75,6 +83,9 @@ public class ConfigValues {
             settingsConfig.add("status", status);
             settingsConfig.addProperty("configVersion", CONFIG_VERSION);
             settingsConfig.addProperty("apikey", main.getApiKey());
+            settingsConfig.addProperty("leftCPS", main.getPlayerListener().leftCPS);
+            settingsConfig.addProperty("rightCPS", main.getPlayerListener().rightCPS);
+            settingsConfig.addProperty("speedBridgeSecurity", main.getPlayerListener().speedBridgeSecurity);
 
             try (FileWriter writer = new FileWriter(settingsConfigFile);
                  BufferedWriter bufferedWriter = new BufferedWriter(writer)) {

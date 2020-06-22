@@ -55,8 +55,8 @@ public class ConfusingAddons {
         keyBindings = new KeyBinding[]{
                 new KeyBinding("MLG Water Bucket", Keyboard.KEY_TAB, ConfusingAddons.MOD_NAME),
                 new KeyBinding("Speedbridge", Keyboard.KEY_Z, ConfusingAddons.MOD_NAME),
-                new KeyBinding("Left Autoclicker", Keyboard.KEY_M, ConfusingAddons.MOD_NAME),
-                new KeyBinding("Right Autoclicker", Keyboard.KEY_NONE, ConfusingAddons.MOD_NAME)
+                new KeyBinding("Autoclicker Left", Keyboard.KEY_M, ConfusingAddons.MOD_NAME),
+                new KeyBinding("Autoclicker Right", Keyboard.KEY_NONE, ConfusingAddons.MOD_NAME)
         };
         for (KeyBinding keyBinding : keyBindings)
             ClientRegistry.registerKeyBinding(keyBinding);
@@ -97,7 +97,7 @@ public class ConfusingAddons {
         getApiUtils().clearCaches();
     }
 
-    public void disableHypixelAPI() {
+    public void resetAPIKey() {
         API = null;
     }
 }
