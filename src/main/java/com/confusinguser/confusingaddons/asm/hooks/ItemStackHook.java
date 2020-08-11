@@ -21,8 +21,30 @@ public class ItemStackHook {
             }
             if (extraAttributes.hasKey("spawnedFor")) {
                 String spawnedFor = extraAttributes.getString("spawnedFor");
-                 spawnedFor = ConfusingAddons.getInstance().getApiUtils().getDisplayNameFromUUID(spawnedFor);
+                spawnedFor = ConfusingAddons.getInstance().getApiUtils().getDisplayNameFromUUID(spawnedFor);
                 list.add("§fOriginal Owner: " + (spawnedFor == null ? "§7Loading..." : spawnedFor));
+            }
+
+            int rarityLineIndex = list.size() - 1;
+            if (extraAttributes.hasKey("baseStatBoostPercentage")) {
+                for (int i = 0; i < list.size(); i++) {
+                    if (ConfusingAddons.getInstance().getUtils().isRairityLine(list.get(i))) {
+                        rarityLineIndex = i;
+                        break;
+                    }
+                }
+
+                int baseStatBoostPercentage = extraAttributes.getInteger("baseStatBoostPercentage");
+                if (extraAttributes.hasKey("item_tier")) {
+                    int itemTier = extraAttributes.getInteger("item_tier");
+                    String floorName = ConfusingAddons.getInstance().getLangUtils().getFloorNameFromNumber(itemTier);
+                    list.add(rarityLineIndex, "§7Base Stats: §" +
+                            ConfusingAddons.getInstance().getLangUtils().getMinecraftColorCodeFromDouble(itemTier / 4d) +
+                            "[" + floorName + "] §r§" + ConfusingAddons.getInstance().getLangUtils().getMinecraftColorCodeFromDouble(baseStatBoostPercentage / 50d) +
+                            baseStatBoostPercentage + "/50");
+                } else {
+                    list.add(rarityLineIndex, "§7Base Stats: §" + ConfusingAddons.getInstance().getLangUtils().getMinecraftColorCodeFromDouble(baseStatBoostPercentage / 50d) + extraAttributes.getInteger("baseStatBoostPercentage") + "/50");
+                }
             }
         }
         return list;

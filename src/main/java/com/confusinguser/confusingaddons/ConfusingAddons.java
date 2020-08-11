@@ -1,12 +1,10 @@
 package com.confusinguser.confusingaddons;
 
 import com.confusinguser.confusingaddons.commands.ConfusingAddonsCommand;
+import com.confusinguser.confusingaddons.commands.FindprivatemegaCommand;
 import com.confusinguser.confusingaddons.commands.SlayerCommand;
 import com.confusinguser.confusingaddons.listeners.EventListener;
-import com.confusinguser.confusingaddons.utils.ApiUtils;
-import com.confusinguser.confusingaddons.utils.ConfigValues;
-import com.confusinguser.confusingaddons.utils.ConfusingHypixelAPI;
-import com.confusinguser.confusingaddons.utils.Utils;
+import com.confusinguser.confusingaddons.utils.*;
 import net.minecraft.client.settings.KeyBinding;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
@@ -26,8 +24,9 @@ public class ConfusingAddons {
     static final String VERSION = "1.0";
     static final String MOD_NAME = "ConfusingAddons";
     private static ConfusingAddons instance;
-    private final EventListener eventListener = new EventListener(this);
+    private EventListener eventListener;
     private final Utils utils = new Utils(this);
+    private final LangUtils langUtils = new LangUtils(this);
     private final ApiUtils apiUtils = new ApiUtils(this);
     public Logger logger = LogManager.getLogger(MODID);
     public KeyBinding[] keyBindings;
@@ -43,14 +42,20 @@ public class ConfusingAddons {
     public void preInit(FMLPreInitializationEvent e) {
         instance = this;
         configValues = new ConfigValues(this, e.getSuggestedConfigurationFile());
-        configValues.loadConfig();
+//        Multithreading.schedule(() -> System.out.println("FPS: " + Minecraft.getDebugFPS()), 1000, 10000, TimeUnit.MILLISECONDS);
+//        Multithreading.schedule(() -> {
+//            try {
+//                Minecraft.getMinecraft().runGameLoop();    ception exception) {
+//                exception.printStackTrace();
+//            }
+//        }, 1, 1, TimeUnit.MILLISECONDS);
     }
 
     @Mod.EventHandler
     public void init(FMLInitializationEvent e) {
-        MinecraftForge.EVENT_BUS.register(eventListener);
         ClientCommandHandler.instance.registerCommand(new SlayerCommand(this));
         ClientCommandHandler.instance.registerCommand(new ConfusingAddonsCommand(this));
+        ClientCommandHandler.instance.registerCommand(new FindprivatemegaCommand());
 
         keyBindings = new KeyBinding[]{
                 new KeyBinding("MLG Water Bucket", Keyboard.KEY_TAB, ConfusingAddons.MOD_NAME),
@@ -60,6 +65,10 @@ public class ConfusingAddons {
         };
         for (KeyBinding keyBinding : keyBindings)
             ClientRegistry.registerKeyBinding(keyBinding);
+
+        eventListener = new EventListener(this);
+        MinecraftForge.EVENT_BUS.register(eventListener);
+        configValues.loadConfig();
     }
 
     public EventListener getPlayerListener() {
@@ -99,5 +108,9 @@ public class ConfusingAddons {
 
     public void resetAPIKey() {
         API = null;
+    }
+
+    public LangUtils getLangUtils() {
+        return langUtils;
     }
 }

@@ -2,6 +2,7 @@ package com.confusinguser.confusingaddons.commands;
 
 import com.confusinguser.confusingaddons.ConfusingAddons;
 import com.confusinguser.confusingaddons.utils.Feature;
+import gui.ConfusingAddonsGui;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.BlockPos;
@@ -43,7 +44,7 @@ public class ConfusingAddonsCommand extends CommandBase {
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
         if (args.length == 1) {
-            return getListOfStringsMatchingLastWord(args, "hidejoinleavemessages", "nbt", "switchtobatphonewhenslayerdone", "autoopenmaddoxgui", "hidelobbyspam", "showclickcommands", "setkey", "speedbridge", "leftautoclicker", "rightautoclicker");
+            return getListOfStringsMatchingLastWord(args, "hidejoinleavemessages", "nbt", "switchtobatphonewhenslayerdone", "autoopenmaddoxgui", "hidelobbyspam", "showclickcommands", "showpacketsinchat", "setkey", "speedbridge", "leftautoclicker", "rightautoclicker");
         } else if (args.length == 2 && args[0].equalsIgnoreCase("speedbridge")) {
             return getListOfStringsMatchingLastWord(args, "security");
         } else if (args.length == 2 && args[0].contains("autoclicker")) {
@@ -57,7 +58,7 @@ public class ConfusingAddonsCommand extends CommandBase {
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if (args.length == 0) {
-            main.getUtils().sendMessageToPlayer("Invalid argument!", EnumChatFormatting.RED);
+            main.getPlayerListener().setGuiToOpen(new ConfusingAddonsGui());
             return;
         }
         if (args[0].equalsIgnoreCase("hidejoinleavemessages")) {
@@ -68,7 +69,8 @@ public class ConfusingAddonsCommand extends CommandBase {
                 status = main.getUtils().interpretBooleanString(args[1]);
             }
             Feature.HIDE_JOIN_LEAVE_MESSAGES.setStatus(status);
-            if (status) main.getUtils().sendMessageToPlayer("Join and leave messages are now hidden!", EnumChatFormatting.GREEN);
+            if (status)
+                main.getUtils().sendMessageToPlayer("Join and leave messages are now hidden!", EnumChatFormatting.GREEN);
             else main.getUtils().sendMessageToPlayer("Join and leave messages are now shown!", EnumChatFormatting.RED);
         } else if (args[0].equalsIgnoreCase("nbt")) {
 
@@ -103,8 +105,10 @@ public class ConfusingAddonsCommand extends CommandBase {
                 status = main.getUtils().interpretBooleanString(args[1]);
             }
             Feature.AUTO_OPEN_MADDOX_GUI.setStatus(status);
-            if (status) main.getUtils().sendMessageToPlayer("Maddox GUI will automatically open when calling!", EnumChatFormatting.GREEN);
-            else main.getUtils().sendMessageToPlayer("Maddox GUI will no longer automatically open when calling!", EnumChatFormatting.RED);
+            if (status)
+                main.getUtils().sendMessageToPlayer("Maddox GUI will automatically open when calling!", EnumChatFormatting.GREEN);
+            else
+                main.getUtils().sendMessageToPlayer("Maddox GUI will no longer automatically open when calling!", EnumChatFormatting.RED);
         } else if (args[0].equalsIgnoreCase("hidelobbyspam")) {
 
             boolean status;
@@ -129,6 +133,18 @@ public class ConfusingAddonsCommand extends CommandBase {
 
             if (status) main.getUtils().sendMessageToPlayer("Click commands are now shown!", EnumChatFormatting.GREEN);
             else main.getUtils().sendMessageToPlayer("Click commands are now hidden!", EnumChatFormatting.RED);
+        } else if (args[0].equalsIgnoreCase("showpacketsinchat")) {
+
+            boolean status;
+            if (args.length == 1) {
+                status = !Feature.SHOW_PACKETS_IN_CHAT.isEnabled();
+            } else {
+                status = main.getUtils().interpretBooleanString(args[0]);
+            }
+            Feature.SHOW_PACKETS_IN_CHAT.setStatus(status);
+
+            if (status) main.getUtils().sendMessageToPlayer("Packets are now shown in chat!", EnumChatFormatting.GREEN);
+            else main.getUtils().sendMessageToPlayer("Packets are no longer shown in chat!", EnumChatFormatting.RED);
         } else if (args[0].equalsIgnoreCase("setkey")) {
             if (args.length == 1) {
                 main.getUtils().sendMessageToPlayer("Usage: /ca setkey <your-api-key>", EnumChatFormatting.RED);
@@ -145,7 +161,7 @@ public class ConfusingAddonsCommand extends CommandBase {
                 main.getUtils().sendMessageToPlayer("Usage: /ca speedbridge <security> ...", EnumChatFormatting.RED);
             } else if (args[1].equalsIgnoreCase("security")) {
                 if (args.length == 2)
-                    main.getUtils().sendMessageToPlayer("Usage: /ca speedbridge security <security integer 0-10>", EnumChatFormatting.RED);
+                    main.getUtils().sendMessageToPlayer("Current speedbridge security: " + main.getPlayerListener().speedBridgeSecurity, EnumChatFormatting.YELLOW);
                 else {
                     try {
                         int speedBridgeSecurity = Integer.parseInt(args[2]);
@@ -166,13 +182,13 @@ public class ConfusingAddonsCommand extends CommandBase {
                 main.getUtils().sendMessageToPlayer("Usage: /ca leftautoclicker <cps> ...", EnumChatFormatting.RED);
             } else if (args[1].equalsIgnoreCase("cps")) {
                 if (args.length == 2)
-                    main.getUtils().sendMessageToPlayer("Usage: /ca leftautoclicker cps <cps 0-20>", EnumChatFormatting.RED);
+                    main.getUtils().sendMessageToPlayer("Current Left CPS: " + main.getPlayerListener().leftCPS, EnumChatFormatting.YELLOW);
                 else {
                     try {
                         int leftCPS = Integer.parseInt(args[2]);
                         if (leftCPS <= 20 && leftCPS >= 0) {
                             main.getPlayerListener().leftCPS = leftCPS;
-                            main.getUtils().sendMessageToPlayer("CPS is now set to " + args[2], EnumChatFormatting.GREEN);
+                            main.getUtils().sendMessageToPlayer("Left CPS is now set to " + args[2], EnumChatFormatting.GREEN);
                             main.getConfigValues().saveConfig();
                         } else {
                             main.getUtils().sendMessageToPlayer("CPS must be in between 0 and 20", EnumChatFormatting.RED);
@@ -187,14 +203,14 @@ public class ConfusingAddonsCommand extends CommandBase {
                 main.getUtils().sendMessageToPlayer("Usage: /ca rightautoclicker <cps> ...", EnumChatFormatting.RED);
             } else if (args[1].equalsIgnoreCase("cps")) {
                 if (args.length == 2)
-                    main.getUtils().sendMessageToPlayer("Usage: /ca rightautoclicker cps <cps 0-20>", EnumChatFormatting.RED);
+                    main.getUtils().sendMessageToPlayer("Current Right CPS: " + main.getPlayerListener().rightCPS, EnumChatFormatting.YELLOW);
                 else {
                     try {
                         int rightCPS = Integer.parseInt(args[2]);
                         if (rightCPS <= 20 && rightCPS >= 0) {
                             main.getPlayerListener().rightCPS = rightCPS;
                             main.getConfigValues().saveConfig();
-                            main.getUtils().sendMessageToPlayer("CPS is now set to " + args[2], EnumChatFormatting.GREEN);
+                            main.getUtils().sendMessageToPlayer("Right CPS is now set to " + args[2], EnumChatFormatting.GREEN);
                         } else {
                             main.getUtils().sendMessageToPlayer("CPS must be in between 0 and 20", EnumChatFormatting.RED);
                         }

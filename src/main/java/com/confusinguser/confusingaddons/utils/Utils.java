@@ -8,6 +8,10 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
 import net.minecraft.event.ClickEvent;
 import net.minecraft.network.play.server.S02PacketChat;
+import net.minecraft.scoreboard.Score;
+import net.minecraft.scoreboard.ScoreObjective;
+import net.minecraft.scoreboard.ScorePlayerTeam;
+import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.*;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
@@ -37,18 +41,21 @@ public class Utils {
     private static final Pattern joinLeaveMessageRegex = Pattern.compile("(?:§2Guild|§aFriend) > §[0-9a-f]\\w{3,16} (?:§e|)(?:left|joined)\\."); // §aFriend > §aConfusingUser §eleft. || §2Guild > §aConfusingUser §eleft.
     private static final Pattern gameAdRegex = Pattern.compile("§b. (?:A|An) §[0-9a-f]§l[a-zA-Z0-9() ]+§[0-9a-f] game is (?:available to join|starting in 30 seconds)! §[0-9a-f]§lCLICK HERE§b to join!"); // §b? A §e§lGalaxy Wars§b game is available to join! §6§lCLICK HERE§b to join!
     private static final Pattern queueTitleRegex = Pattern.compile("");
+    private static final Pattern megaLobbyRegex = Pattern.compile("\\d\\d/\\d\\d/\\d\\d (?:M|mega)\\d{1,4}\\w");
     private static final Pattern apiKeyUpdateRegex = Pattern.compile("§aYour new API key is §b[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}"); // §aYour new API key is §b77c1b199-e508-4038-a5cd-35a6069906fa
     private static final Pattern timestampAddZeroToHoursRegex = Pattern.compile(" \\d:");
+    private static final Pattern stripWeirdCharsRegex = Pattern.compile("[^a-zA-Z-0-9/ ]");
     private static final String batphoneButtonMessage = "§2§l[OPEN MENU]";
     private static final String slayerBossSlainMessage = "§6§lNICE! SLAYER BOSS SLAIN!";
 
     // private ConfusingAddons main;
     private final String USER_AGENT = "Mozilla/5.0";
     private final Map<Integer, Map.Entry<Runnable, Integer>> scheduleQueue = new HashMap<>();
-    private int scheduleId = 0;
-
     DateFormat dateFormat = new SimpleDateFormat("MM/dd/yy KK:mm aa");
     DateFormat dateFormatOutput = new SimpleDateFormat("dd MMM yy 'at' KK:mm aa");
+    private int scheduleId = 0;
+    /*private Field keyDownBuffer_ref;
+    private Field readBuffer_ref;*/
 
     public Utils(ConfusingAddons main) {
         // this.main = main;
@@ -208,10 +215,81 @@ public class Utils {
             try {
                 return Mouse.isButtonDown(keyOrButtonCode);
             } catch (IndexOutOfBoundsException exception) {
-                ConfusingAddons.getInstance().logger.error("Error at function isKeyOrMouseButtonDown() with keyOrButtonCode " + keyOrButtonCode);
                 ConfusingAddons.getInstance().logger.error(exception);
                 return false;
             }
         }
     }
+
+    public boolean isInAPrivateMega() {
+        Scoreboard scoreboard = Minecraft.getMinecraft().theWorld.getScoreboard();
+        ScoreObjective sidebarObjective = scoreboard.getObjectiveInDisplaySlot(1);
+        if (sidebarObjective != null) {
+            for (Score score : scoreboard.getSortedScores(sidebarObjective)) {
+                String playerName = score.getPlayerName();
+                ScorePlayerTeam scorePlayerTeam = scoreboard.getPlayersTeam(playerName);
+                System.out.println(ScorePlayerTeam.formatPlayerName(scorePlayerTeam, score.getPlayerName()));
+                if (megaLobbyRegex.matcher(stripWeirdChars(StringUtils.stripControlCodes(ScorePlayerTeam.formatPlayerName(scorePlayerTeam, score.getPlayerName())))).matches()) {
+                    if (Minecraft.getMinecraft().theWorld.playerEntities.stream().filter(player -> player.getUniqueID().version() == 4).count() < 20) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
+    public boolean isInAnEmptyLobby() {
+        return Minecraft.getMinecraft().theWorld.playerEntities.stream().filter(player -> player.getUniqueID().version() == 4).count() < 10;
+    }
+
+    public String stripWeirdChars(String input) {
+        return stripWeirdCharsRegex.matcher(input).replaceAll("");
+    }
+
+    public boolean showMessageOnRightSide(IChatComponent message) {
+        return true;
+    }
+
+    public boolean isRairityLine(String line) {
+        return line.contains("COMMON") || line.contains("UNCOMMON") || line.contains("RARE") || line.contains("EPIC") || line.contains("LEGENDARY") || line.contains("COMMON");
+    }
+
+    /*public void setKeyState(int keyCode, boolean keyState) {
+        if (keyDownBuffer_ref == null) {
+            try {
+                keyDownBuffer_ref = Keyboard.class.getDeclaredField("keyDownBuffer");
+                keyDownBuffer_ref.setAccessible(true);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+        }
+        if (readBuffer_ref == null) {
+            try {
+                readBuffer_ref = Keyboard.class.getDeclaredField("readBuffer");
+                readBuffer_ref.setAccessible(true);
+            } catch (NoSuchFieldException e) {
+                e.printStackTrace();
+            }
+        }
+        try {
+            ByteBuffer keyDownBuffer = (ByteBuffer) keyDownBuffer_ref.get(null);
+            int old_position = keyDownBuffer.position();
+            keyDownBuffer.put(keyCode, keyState ? (byte) 1 : (byte) 0);
+            keyDownBuffer.position(old_position);
+        } catch (IllegalAccessException | IndexOutOfBoundsException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            ByteBuffer readBuffer = (ByteBuffer) readBuffer_ref.get(null);
+            ByteBuffer tmp_event = BufferUtils.createByteBuffer(18);
+            tmp_event.putInt(keyCode).put(keyState ? (byte) 1 : (byte) 0).putInt(keyCode).putLong(100 * 1000000).put((byte) 0);
+            tmp_event.flip();
+            readBuffer.clear();
+            readBuffer.put(tmp_event);
+        } catch (IllegalAccessException | IndexOutOfBoundsException e) {
+            e.printStackTrace();
+        }
+    }*/
 }

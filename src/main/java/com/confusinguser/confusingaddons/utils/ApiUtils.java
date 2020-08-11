@@ -20,10 +20,8 @@ import java.util.concurrent.ExecutionException;
 public class ApiUtils {
 
     ConfusingAddons main;
-
-    private Map<String, String> uuidToUsernameCache = new HashMap<>();
-
     boolean busy = false;
+    private Map<String, String> uuidToUsernameCache = new HashMap<>();
 
     public ApiUtils(ConfusingAddons main) {
         this.main = main;
@@ -68,10 +66,14 @@ public class ApiUtils {
                     } else {
                         JsonObject playerData = main.getAPI().getPlayerByUuid(uuid).get().getPlayer();
                         HypixelRank rank = HypixelRank.NONE;
-                        if (playerData.has("packageRank") && !playerData.get("packageRank").getAsString().equals("NONE")) rank = HypixelRank.getHypixelRankFromName(playerData.get("packageRank").getAsString());
-                        if (playerData.has("newPackageRank") && !playerData.get("newPackageRank").getAsString().equals("NONE")) rank = HypixelRank.getHypixelRankFromName(playerData.get("newPackageRank").getAsString());
-                        if (playerData.has("monthlyPackageRank") && !playerData.get("monthlyPackageRank").getAsString().equals("NONE")) rank = HypixelRank.getHypixelRankFromName(playerData.get("monthlyPackageRank").getAsString());
-                        if (playerData.has("rank") && !playerData.get("rank").getAsString().equals("NORMAL")) rank = HypixelRank.getHypixelRankFromName(playerData.get("rank").getAsString());
+                        if (playerData.has("packageRank") && !playerData.get("packageRank").getAsString().equals("NONE"))
+                            rank = HypixelRank.getHypixelRankFromName(playerData.get("packageRank").getAsString());
+                        if (playerData.has("newPackageRank") && !playerData.get("newPackageRank").getAsString().equals("NONE"))
+                            rank = HypixelRank.getHypixelRankFromName(playerData.get("newPackageRank").getAsString());
+                        if (playerData.has("monthlyPackageRank") && !playerData.get("monthlyPackageRank").getAsString().equals("NONE"))
+                            rank = HypixelRank.getHypixelRankFromName(playerData.get("monthlyPackageRank").getAsString());
+                        if (playerData.has("rank") && !playerData.get("rank").getAsString().equals("NORMAL"))
+                            rank = HypixelRank.getHypixelRankFromName(playerData.get("rank").getAsString());
                         String prefix = rank.getPrefix();
                         if (playerData.has("prefix")) prefix = playerData.get("prefix").getAsString() + " ";
 
