@@ -6,6 +6,7 @@ import net.minecraft.nbt.NBTTagCompound;
 
 import java.util.List;
 
+@SuppressWarnings("unused")
 public class ItemStackHook {
 
     public static List<String> getToolTip(ItemStack item, List<String> list) {

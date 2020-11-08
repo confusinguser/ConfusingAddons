@@ -3,21 +3,41 @@ package com.confusinguser.confusingaddons.utils;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.hypixel.api.HypixelAPI;
+import net.minecraft.client.Minecraft;
 
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.ExecutionException;
 
 public class ConfusingHypixelAPI extends HypixelAPI {
 
     private static final String BASE_URL = "https://api.hypixel.net/";
     private static final String USER_AGENT = "Mozilla/5.0";
 
+    private final List<String> guildMemberCache = new ArrayList<>();
+
     public ConfusingHypixelAPI(UUID apiKey) {
         super(apiKey);
+        Multithreading.runAsync(() -> {
+            try {
+                getGuildByPlayer(Minecraft.getMinecraft().thePlayer.getUniqueID()).get().getGuild().getMembers()
+                        .forEach(member -> {
+                            try {
+                                guildMemberCache.add(getPlayerByUuid(member.getUuid()).get().getPlayer().get("displayname").getAsString());
+                            } catch (InterruptedException | ExecutionException e) {
+                                e.printStackTrace();
+                            }
+                        });
+            } catch (InterruptedException | ExecutionException e) {
+                e.printStackTrace();
+            }
+        });
     }
 
     // Not as nicely done I know :/
@@ -51,7 +71,6 @@ public class ConfusingHypixelAPI extends HypixelAPI {
                 Thread.sleep(5000);
             } catch (InterruptedException e1) {
                 e.printStackTrace();
-                // Restore interrupted state...
                 Thread.currentThread().interrupt();
             }
             return getSkyblockProfileByUUID(uuid);
@@ -65,7 +84,6 @@ public class ConfusingHypixelAPI extends HypixelAPI {
                 Thread.sleep(17000);
             } catch (InterruptedException e) {
                 e.printStackTrace();
-                // Restore interrupted state...
                 Thread.currentThread().interrupt();
             }
             return getSkyblockProfileByUUID(uuid);
@@ -74,5 +92,9 @@ public class ConfusingHypixelAPI extends HypixelAPI {
             return null;
         }
         return jsonObject;
+    }
+
+    public List<String> getGuildMembers() {
+        return new ArrayList<>(guildMemberCache);
     }
 }

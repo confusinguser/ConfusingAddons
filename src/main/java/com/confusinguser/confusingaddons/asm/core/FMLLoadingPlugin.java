@@ -1,4 +1,4 @@
-package com.confusinguser.confusingaddons.asm;
+package com.confusinguser.confusingaddons.asm.core;
 
 import net.minecraftforge.common.ForgeVersion;
 import net.minecraftforge.fml.relauncher.IFMLLoadingPlugin;

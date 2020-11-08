@@ -44,12 +44,8 @@ public class ConfusingAddonsCommand extends CommandBase {
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
         if (args.length == 1) {
-            return getListOfStringsMatchingLastWord(args, "hidejoinleavemessages", "nbt", "switchtobatphonewhenslayerdone", "autoopenmaddoxgui", "hidelobbyspam", "showclickcommands", "showpacketsinchat", "setkey", "speedbridge", "leftautoclicker", "rightautoclicker");
-        } else if (args.length == 2 && args[0].equalsIgnoreCase("speedbridge")) {
-            return getListOfStringsMatchingLastWord(args, "security");
-        } else if (args.length == 2 && args[0].contains("autoclicker")) {
-            return getListOfStringsMatchingLastWord(args, "cps");
-        } else if (args.length == 2 && !args[0].contains("autoclicker") && !args[0].equalsIgnoreCase("speedbridge")) {
+            return getListOfStringsMatchingLastWord(args, "hidejoinleavemessages", "nbt", "switchtobatphonewhenslayerdone", "autoopenmaddoxgui", "hidelobbyspam", "showclickcommands", "showpacketsinchat", "setkey", "speedbridge");
+        } else if (args.length == 2) {
             return Arrays.asList("on", "off");
         }
         return new ArrayList<>();
@@ -58,7 +54,7 @@ public class ConfusingAddonsCommand extends CommandBase {
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if (args.length == 0) {
-            main.getPlayerListener().setGuiToOpen(new ConfusingAddonsGui());
+            main.getEventListener().setGuiToOpen(new ConfusingAddonsGui());
             return;
         }
         if (args[0].equalsIgnoreCase("hidejoinleavemessages")) {
@@ -133,18 +129,6 @@ public class ConfusingAddonsCommand extends CommandBase {
 
             if (status) main.getUtils().sendMessageToPlayer("Click commands are now shown!", EnumChatFormatting.GREEN);
             else main.getUtils().sendMessageToPlayer("Click commands are now hidden!", EnumChatFormatting.RED);
-        } else if (args[0].equalsIgnoreCase("showpacketsinchat")) {
-
-            boolean status;
-            if (args.length == 1) {
-                status = !Feature.SHOW_PACKETS_IN_CHAT.isEnabled();
-            } else {
-                status = main.getUtils().interpretBooleanString(args[0]);
-            }
-            Feature.SHOW_PACKETS_IN_CHAT.setStatus(status);
-
-            if (status) main.getUtils().sendMessageToPlayer("Packets are now shown in chat!", EnumChatFormatting.GREEN);
-            else main.getUtils().sendMessageToPlayer("Packets are no longer shown in chat!", EnumChatFormatting.RED);
         } else if (args[0].equalsIgnoreCase("setkey")) {
             if (args.length == 1) {
                 main.getUtils().sendMessageToPlayer("Usage: /ca setkey <your-api-key>", EnumChatFormatting.RED);
@@ -156,70 +140,6 @@ public class ConfusingAddonsCommand extends CommandBase {
                     main.getUtils().sendMessageToPlayer("That is not a valid API key!", EnumChatFormatting.RED);
                 }
             }
-        } else if (args[0].equalsIgnoreCase("speedbridge")) {
-            if (args.length == 1) {
-                main.getUtils().sendMessageToPlayer("Usage: /ca speedbridge <security> ...", EnumChatFormatting.RED);
-            } else if (args[1].equalsIgnoreCase("security")) {
-                if (args.length == 2)
-                    main.getUtils().sendMessageToPlayer("Current speedbridge security: " + main.getPlayerListener().speedBridgeSecurity, EnumChatFormatting.YELLOW);
-                else {
-                    try {
-                        int speedBridgeSecurity = Integer.parseInt(args[2]);
-                        if (speedBridgeSecurity <= 10 && speedBridgeSecurity >= 0) {
-                            main.getPlayerListener().speedBridgeSecurity = speedBridgeSecurity;
-                            main.getConfigValues().saveConfig();
-                            main.getUtils().sendMessageToPlayer("Speedbridge security is now set to " + args[2], EnumChatFormatting.GREEN);
-                        } else {
-                            main.getUtils().sendMessageToPlayer("Security value has to be in between 0 and 10", EnumChatFormatting.RED);
-                        }
-                    } catch (NumberFormatException e) {
-                        main.getUtils().sendMessageToPlayer("That is not a valid integer!", EnumChatFormatting.RED);
-                    }
-                }
-            }
-        } else if (args[0].equalsIgnoreCase("leftautoclicker")) {
-            if (args.length == 1) {
-                main.getUtils().sendMessageToPlayer("Usage: /ca leftautoclicker <cps> ...", EnumChatFormatting.RED);
-            } else if (args[1].equalsIgnoreCase("cps")) {
-                if (args.length == 2)
-                    main.getUtils().sendMessageToPlayer("Current Left CPS: " + main.getPlayerListener().leftCPS, EnumChatFormatting.YELLOW);
-                else {
-                    try {
-                        int leftCPS = Integer.parseInt(args[2]);
-                        if (leftCPS <= 20 && leftCPS >= 0) {
-                            main.getPlayerListener().leftCPS = leftCPS;
-                            main.getUtils().sendMessageToPlayer("Left CPS is now set to " + args[2], EnumChatFormatting.GREEN);
-                            main.getConfigValues().saveConfig();
-                        } else {
-                            main.getUtils().sendMessageToPlayer("CPS must be in between 0 and 20", EnumChatFormatting.RED);
-                        }
-                    } catch (NumberFormatException e) {
-                        main.getUtils().sendMessageToPlayer("That is not a valid integer!", EnumChatFormatting.RED);
-                    }
-                }
-            }
-        } else if (args[0].equalsIgnoreCase("rightautoclicker")) {
-            if (args.length == 1) {
-                main.getUtils().sendMessageToPlayer("Usage: /ca rightautoclicker <cps> ...", EnumChatFormatting.RED);
-            } else if (args[1].equalsIgnoreCase("cps")) {
-                if (args.length == 2)
-                    main.getUtils().sendMessageToPlayer("Current Right CPS: " + main.getPlayerListener().rightCPS, EnumChatFormatting.YELLOW);
-                else {
-                    try {
-                        int rightCPS = Integer.parseInt(args[2]);
-                        if (rightCPS <= 20 && rightCPS >= 0) {
-                            main.getPlayerListener().rightCPS = rightCPS;
-                            main.getConfigValues().saveConfig();
-                            main.getUtils().sendMessageToPlayer("Right CPS is now set to " + args[2], EnumChatFormatting.GREEN);
-                        } else {
-                            main.getUtils().sendMessageToPlayer("CPS must be in between 0 and 20", EnumChatFormatting.RED);
-                        }
-                    } catch (NumberFormatException e) {
-                        main.getUtils().sendMessageToPlayer("That is not a valid integer!", EnumChatFormatting.RED);
-                    }
-                }
-            }
         }
-
     }
 }

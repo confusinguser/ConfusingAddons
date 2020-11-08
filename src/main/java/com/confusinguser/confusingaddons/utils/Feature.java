@@ -3,18 +3,30 @@ package com.confusinguser.confusingaddons.utils;
 import com.confusinguser.confusingaddons.ConfusingAddons;
 
 public enum Feature {
-    HIDE_LOBBY_SPAM,
-    SHOW_CLICK_COMMANDS,
-    HIDE_JOIN_LEAVE_MESSAGES,
-    CLEANER_KICK_ERROR_MESSAGES,
-    SHOW_QUEUE_ESIMATE,
-    MULTITHREADING,
-    COPY_NBT,
-    AUTO_OPEN_MADDOX_GUI,
-    SWITCH_TO_BATPHONE_ON_SLAYER_DONE,
-    SHOW_PACKETS_IN_CHAT;
+    HIDE_LOBBY_SPAM("Hide Lobby \"Spam\""),
+    SHOW_CLICK_COMMANDS("Show Click Commands"),
+    HIDE_JOIN_LEAVE_MESSAGES("Hide Join And Leave Messages"),
+//    CLEANER_KICK_ERROR_MESSAGES,
+//    SHOW_QUEUE_ESIMATE(),
+    COPY_NBT(false, "Copy NBT"),
+    AUTO_OPEN_MADDOX_GUI("Auto Open Batphone GUI"),
+    SWITCH_TO_BATPHONE_ON_SLAYER_DONE("Switch To Batphone When Slayer Killed");
+//    SHOW_PACKETS_IN_CHAT;
 
     protected boolean status;
+
+    public boolean showInMenu;
+    String name;
+
+    Feature(String name) {
+        this.showInMenu = false;
+        this.name = name;
+    }
+
+    Feature(boolean showInMenu, String name) {
+        this.showInMenu = showInMenu;
+        this.name = name;
+    }
 
     public static Feature getFeatureById(int id) {
         for (Feature feature : values()) {
@@ -46,6 +58,10 @@ public enum Feature {
             index++;
         }
         return -1;
+    }
+
+    public String getName() {
+        return name;
     }
 
     public String getIdString() {

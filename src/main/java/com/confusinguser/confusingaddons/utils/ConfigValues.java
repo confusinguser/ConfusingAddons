@@ -39,14 +39,14 @@ public class ConfigValues {
                 try {
                     main.setApiKey(settingsConfig.get("apikey").getAsString(), false);
                 } catch (IllegalArgumentException ex) {
-                    main.logger.warn("API key is somehow malformed, resetting it...");
+                    main.logger.warn("API key is malformed, resetting it...");
                     main.resetAPIKey();
                     saveConfig();
                 }
 
-                main.getPlayerListener().leftCPS = settingsConfig.get("leftCPS").getAsInt();
-                main.getPlayerListener().rightCPS = settingsConfig.get("rightCPS").getAsInt();
-                main.getPlayerListener().speedBridgeSecurity = settingsConfig.get("speedBridgeSecurity").getAsInt();
+                main.getEventListener().leftCPS = settingsConfig.get("leftCPS").getAsInt();
+                main.getEventListener().rightCPS = settingsConfig.get("rightCPS").getAsInt();
+                main.getEventListener().speedBridgeSecurity = settingsConfig.get("speedBridgeSecurity").getAsInt();
 
             } catch (IllegalStateException | IOException ex) {
                 main.logger.warn("There was an error loading the config. Resetting all settings to default.");
@@ -83,9 +83,9 @@ public class ConfigValues {
             settingsConfig.add("status", status);
             settingsConfig.addProperty("configVersion", CONFIG_VERSION);
             settingsConfig.addProperty("apikey", main.getApiKey());
-            settingsConfig.addProperty("leftCPS", main.getPlayerListener().leftCPS);
-            settingsConfig.addProperty("rightCPS", main.getPlayerListener().rightCPS);
-            settingsConfig.addProperty("speedBridgeSecurity", main.getPlayerListener().speedBridgeSecurity);
+            settingsConfig.addProperty("leftCPS", main.getEventListener().leftCPS);
+            settingsConfig.addProperty("rightCPS", main.getEventListener().rightCPS);
+            settingsConfig.addProperty("speedBridgeSecurity", main.getEventListener().speedBridgeSecurity);
 
             try (FileWriter writer = new FileWriter(settingsConfigFile);
                  BufferedWriter bufferedWriter = new BufferedWriter(writer)) {

@@ -39,7 +39,7 @@ targetCompatibility = 1.8
 minecraft {
     version = "1.8.9-11.15.1.1722"
     runDir = "run"
-    coreMod = "com.confusinguser.confusingaddons.asm.FMLLoadingPlugin"
+    coreMod = "com.confusinguser.confusingaddons.asm.core.FMLLoadingPlugin"
     clientRunArgs = findProperty("clientArgs")?.split() ?: []
 
     mappings = "stable_22"
@@ -58,7 +58,7 @@ jar {
 shadowJar {
     archiveName = archivesBaseName + "-" + version + ".jar"
     manifest {
-        attributes FMLCorePlugin: "com.confusinguser.confusingaddons.asm.FMLLoadingPlugin",
+        attributes FMLCorePlugin: "com.confusinguser.confusingaddons.asm.core.FMLLoadingPlugin",
                 FMLAT: "confusingaddons_at.cfg",
                 ModSide: "CLIENT",
                 ForceLoadAsMod: true,

@@ -34,13 +34,7 @@ import java.util.regex.Pattern;
 
 public class Utils {
 
-    private static final Pattern mvpPlusJoinMsgRegex = Pattern.compile("§b\\[MVP§[a-f1-9]\\+§b] \\w{3,16}§f§6 joined the lobby!"); // §b[MVP§9+§b] ConfusingUser§f§6 joined the lobby!
-    private static final Pattern mvpPlusPlusJoinMsgRegex = Pattern.compile(" §b>§c>§a> §[0-9a-f]\\[MVP§[0-9a-f]\\+\\+§[0-9a-f]] \\w{3,16}§f§6 joined the lobby! §a<§c<§b<"); //  §b>§c>§a> §6[MVP§9++§6] ConfusingUser§f§6 joined the lobby! §a<§c<§b<
-    private static final Pattern playerFoundItemInMysteryBoxRegex = Pattern.compile("§b\\[Mystery Box] (?:|§b)§f§[0-9a-f]\\w{3,16} §ffound a §[0-9a-f].*§f!"); // §b[Mystery Box] §f§aConfusingUser §ffound a §6Legendary Easter Egg Cloak§f!
-    private static final Pattern playerFoundMysteryBoxRegex = Pattern.compile("§[0-9a-f]\\w{3,16} §ffound a §e.{4}(?:§7|). §bMystery Box§f!"); // §7ConfusingUser §ffound a §e????? §bMystery Box§f!
     private static final Pattern joinLeaveMessageRegex = Pattern.compile("(?:§2Guild|§aFriend) > §[0-9a-f]\\w{3,16} (?:§e|)(?:left|joined)\\."); // §aFriend > §aConfusingUser §eleft. || §2Guild > §aConfusingUser §eleft.
-    private static final Pattern gameAdRegex = Pattern.compile("§b. (?:A|An) §[0-9a-f]§l[a-zA-Z0-9() ]+§[0-9a-f] game is (?:available to join|starting in 30 seconds)! §[0-9a-f]§lCLICK HERE§b to join!"); // §b? A §e§lGalaxy Wars§b game is available to join! §6§lCLICK HERE§b to join!
-    private static final Pattern queueTitleRegex = Pattern.compile("");
     private static final Pattern megaLobbyRegex = Pattern.compile("\\d\\d/\\d\\d/\\d\\d (?:M|mega)\\d{1,4}\\w");
     private static final Pattern apiKeyUpdateRegex = Pattern.compile("§aYour new API key is §b[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}"); // §aYour new API key is §b77c1b199-e508-4038-a5cd-35a6069906fa
     private static final Pattern timestampAddZeroToHoursRegex = Pattern.compile(" \\d:");
@@ -48,17 +42,15 @@ public class Utils {
     private static final String batphoneButtonMessage = "§2§l[OPEN MENU]";
     private static final String slayerBossSlainMessage = "§6§lNICE! SLAYER BOSS SLAIN!";
 
-    // private ConfusingAddons main;
+    private final ConfusingAddons main;
     private final String USER_AGENT = "Mozilla/5.0";
     private final Map<Integer, Map.Entry<Runnable, Integer>> scheduleQueue = new HashMap<>();
     DateFormat dateFormat = new SimpleDateFormat("MM/dd/yy KK:mm aa");
-    DateFormat dateFormatOutput = new SimpleDateFormat("dd MMM yy 'at' KK:mm aa");
+    DateFormat dateFormatOutput = new SimpleDateFormat("dd MMM yyyy 'at' KK:mm aa");
     private int scheduleId = 0;
-    /*private Field keyDownBuffer_ref;
-    private Field readBuffer_ref;*/
 
     public Utils(ConfusingAddons main) {
-        // this.main = main;
+        this.main = main;
     }
 
     public boolean interpretBooleanString(String input) {
@@ -72,25 +64,15 @@ public class Utils {
 
     public boolean isLobbySpam(String message) {
         message = message.replace("§r", "");
-        return mvpPlusJoinMsgRegex.matcher(message).matches() ||
-                mvpPlusPlusJoinMsgRegex.matcher(message).matches() ||
-                playerFoundItemInMysteryBoxRegex.matcher(message).matches() ||
-                playerFoundMysteryBoxRegex.matcher(message).matches() ||
-                gameAdRegex.matcher(message).matches();
+        return RegexUtil.stringMatches("§b\\[MVP§[a-f1-9]\\+§b] \\w{3,16}§f§6 joined the lobby!", message) || // §b[MVP§9+§b] ConfusingUser§f§6 joined the lobby!)
+                RegexUtil.stringMatches(" §b>§c>§a> §[0-9a-f]\\[MVP§[0-9a-f]\\+\\+§[0-9a-f]] \\w{3,16}§f§6 joined the lobby! §a<§c<§b<", message) || //  §b>§c>§a> §6[MVP§9++§6] ConfusingUser§f§6 joined the lobby! §a<§c<§b<
+                RegexUtil.stringMatches("§b\\[Mystery Box] (?:|§b)§f§[0-9a-f]\\w{3,16} §ffound a §[0-9a-f].*§f!", message) || // §b[Mystery Box] §f§aConfusingUser §ffound a §6Legendary Easter Egg Cloak§f!
+                RegexUtil.stringMatches("§[0-9a-f]\\w{3,16} §ffound a §e.{4}(?:§7|). §bMystery Box§f!", message) || // §7ConfusingUser §ffound a §e????? §bMystery Box§f!
+                RegexUtil.stringMatches("§b. (?:A|An) §[0-9a-f]§l[a-zA-Z0-9() ]+§[0-9a-f] game is (?:available to join|starting in 30 seconds)! §[0-9a-f]§lCLICK HERE§b to join!", message); // §b? A §e§lGalaxy Wars§b game is available to join! §6§lCLICK HERE§b to join!)
     }
 
     public boolean isJoinLeaveMessage(String message) {
-        message = message.replace("§r", "");
-        return joinLeaveMessageRegex.matcher(message).matches();
-    }
-
-    public boolean isQueueTitle(String title) {
-        return true;
-    }
-
-    public long calculateETA(int queuePos, long start, long end) {
-        long timeForOneQueue = end - start;
-        return timeForOneQueue * queuePos;
+        return RegexUtil.stringMatches("(?:§2Guild|§aFriend) > §[0-9a-f]\\w{3,16} (?:§e|)(?:left|joined)\\.", message.replace("§r", "")); // §aFriend > §aConfusingUser §eleft. || §2Guild > §aConfusingUser §eleft.
     }
 
     public String makeETAString(long etaMillis) {
@@ -195,8 +177,8 @@ public class Utils {
     }
 
     public void handleInvalidApiKey() {
-        sendMessageToPlayer("Your API key was invalid and was removed\n§cTo generate a new one, type §b'/api new'", EnumChatFormatting.RED);
-        ConfusingAddons.getInstance().resetAPIKey();
+        sendMessageToPlayer("Your API key is invalid and was removed\n§cTo generate a new one, type §b'/api new'", EnumChatFormatting.RED);
+        main.resetAPIKey();
     }
 
     public String getSystemClipboardContents() {
@@ -215,7 +197,7 @@ public class Utils {
             try {
                 return Mouse.isButtonDown(keyOrButtonCode);
             } catch (IndexOutOfBoundsException exception) {
-                ConfusingAddons.getInstance().logger.error(exception);
+                main.logger.error(exception);
                 return false;
             }
         }
@@ -253,6 +235,18 @@ public class Utils {
 
     public boolean isRairityLine(String line) {
         return line.contains("COMMON") || line.contains("UNCOMMON") || line.contains("RARE") || line.contains("EPIC") || line.contains("LEGENDARY") || line.contains("COMMON");
+    }
+
+    public String getAuthorFromGuildChatMessage(String chatMessage) {
+//        if (chatMessage.chars().filter(aChar -> aChar == ']').count() == 2)
+//            return EnumChatFormatting.getTextWithoutFormattingCodes(chatMessage.substring(chatMessage.indexOf(']') + 2).split(":")[0]);
+//        else
+            return EnumChatFormatting.getTextWithoutFormattingCodes(chatMessage).split(":")[0].substring(8);
+
+    }
+
+    public String getMessageFromGuildChatMessage(String chatMessage) {
+        return EnumChatFormatting.getTextWithoutFormattingCodes(chatMessage.split(":")[1]);
     }
 
     /*public void setKeyState(int keyCode, boolean keyState) {
