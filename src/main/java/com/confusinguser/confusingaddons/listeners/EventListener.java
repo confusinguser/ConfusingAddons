@@ -7,14 +7,8 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayerMP;
-import net.minecraft.event.ClickEvent;
-import net.minecraft.event.ClickEvent.Action;
-import net.minecraft.event.HoverEvent;
 import net.minecraft.inventory.Slot;
-import net.minecraft.util.ChatComponentText;
 import net.minecraft.util.EnumChatFormatting;
-import net.minecraft.util.IChatComponent;
-import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
@@ -23,15 +17,10 @@ import org.lwjgl.input.Keyboard;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class EventListener {
 
     private final ConfusingAddons main;
-    private final ClickEvent.Action[] allowedActions = {Action.RUN_COMMAND, Action.SUGGEST_COMMAND};
 
     public int speedBridgeSecurity;
     public int leftCPS;
@@ -41,60 +30,10 @@ public class EventListener {
 
     public int tickCounter = 0;
 
-    private boolean releaseUseItemButtonNextTick;
-    private boolean releaseAttackButtonNextTick;
-
-    GuiScreen guiToOpen;
+    private GuiScreen guiToOpen;
 
     public EventListener(ConfusingAddons main) {
         this.main = main;
-    }
-
-    @SubscribeEvent
-    public void onChatMessage(ClientChatReceivedEvent event) {
-        if (event.type != 2) {
-            if (Feature.SHOW_CLICK_COMMANDS.isEnabled()) {
-                @SuppressWarnings("unchecked")
-                ArrayList<IChatComponent> siblings = (ArrayList<IChatComponent>) ((ArrayList<IChatComponent>) event.message.getSiblings()).clone();
-                siblings.add(event.message);
-
-                for (IChatComponent sibling : siblings) {
-                    HoverEvent hoverEvent = sibling.getChatStyle().getChatHoverEvent();
-                    ClickEvent clickEvent = sibling.getChatStyle().getChatClickEvent();
-                    if (clickEvent != null && Arrays.asList(allowedActions).contains(clickEvent.getAction())) {
-                        if (hoverEvent == null) {
-                            sibling.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("§8" + clickEvent.getValue())));
-                        } else if (!hoverEvent.getValue().getUnformattedText().contains(clickEvent.getValue())) {
-                            sibling.getChatStyle().setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, hoverEvent.getValue().appendText("\n§8" + clickEvent.getValue())));
-                        }
-                    }
-                }
-            }
-
-            if (Feature.HIDE_LOBBY_SPAM.isEnabled() && main.getUtils().isLobbySpam(event.message.getFormattedText()) ||
-                    Feature.HIDE_JOIN_LEAVE_MESSAGES.isEnabled() && main.getUtils().isJoinLeaveMessage(event.message.getFormattedText())) {
-                event.setCanceled(true);
-            }
-
-            // If api key updated in game
-            if (main.getUtils().isApiKeyUpdateMessage(event.message.getFormattedText().replace("§r", ""))) {
-                main.setApiKey(event.message.getFormattedText().replace("§r", "").substring(24));
-            }
-
-            if (Feature.SWITCH_TO_BATPHONE_ON_SLAYER_DONE.isEnabled() && main.getUtils().isSlayerBossSlainMessage(event.message.getFormattedText().replace("§r", ""))) {
-                List<String> itemIdList = Arrays.stream(mc.thePlayer.inventory.mainInventory).map(itemStack -> itemStack != null ? itemStack.serializeNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id") : "").collect(Collectors.toList()).subList(0, 8);
-                if (itemIdList.contains("AATROX_BATPHONE")) {
-                    int batphoneSlotId = itemIdList.indexOf("AATROX_BATPHONE");
-                    mc.thePlayer.inventory.currentItem = batphoneSlotId >= 0 && batphoneSlotId < 9 ? batphoneSlotId : mc.thePlayer.inventory.currentItem;
-                }
-            }
-
-            if (Feature.AUTO_OPEN_MADDOX_GUI.isEnabled() && !main.getUtils().playerCurrentlyFightingBoss() && main.getUtils().getCommandFromBatphoneMessage(event.message) != null) {
-                mc.thePlayer.sendChatMessage("/cb " + main.getUtils().getCommandFromBatphoneMessage(event.message).substring(4));
-            }
-
-            main.logger.info(event.message.getFormattedText().replace("§r", ""));
-        }
     }
 
     @SubscribeEvent

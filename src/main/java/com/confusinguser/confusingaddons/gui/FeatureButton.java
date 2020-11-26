@@ -9,13 +9,13 @@ import net.minecraft.client.renderer.GlStateManager;
 public class FeatureButton extends GuiButton {
     Feature feature;
 
-    public FeatureButton(int buttonId, int x, int y, String buttonText, Feature feature) {
-        super(buttonId, x, y, buttonText);
+    public FeatureButton(int buttonId, int x, int y, Feature feature) {
+        super(buttonId, x, y, "");
         this.feature = feature;
     }
 
-    public FeatureButton(int buttonId, int x, int y, int widthIn, int heightIn, String buttonText, Feature feature) {
-        super(buttonId, x, y, widthIn, heightIn, buttonText);
+    public FeatureButton(int buttonId, int x, int y, int widthIn, int heightIn, Feature feature) {
+        super(buttonId, x, y, widthIn, heightIn, "");
         this.feature = feature;
     }
 
@@ -24,18 +24,15 @@ public class FeatureButton extends GuiButton {
         if (this.visible)
         {
             FontRenderer fontrenderer = mc.fontRendererObj;
+            mc.getTextureManager().bindTexture(buttonTextures);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
             this.hovered = mouseX >= this.xPosition && mouseY >= this.yPosition && mouseX < this.xPosition + this.width && mouseY < this.yPosition + this.height;
             int i = this.getHoverState(this.hovered);
-            GlStateManager.pushMatrix();
             GlStateManager.enableBlend();
             GlStateManager.tryBlendFuncSeparate(770, 771, 1, 0);
             GlStateManager.blendFunc(770, 771);
-            if (feature.isEnabled())
-                this.drawGradientRect(this.xPosition, this.yPosition, this.xPosition + 130, this.yPosition + 110, 0x88008800, 0x88008800);
-            else
-                this.drawGradientRect(this.xPosition, this.yPosition, this.xPosition + 130, this.yPosition + 110, 0x88880000, 0x88880000);
-            GlStateManager.popMatrix();
+            this.drawTexturedModalRect(this.xPosition, this.yPosition, 0, 46 + i * 20, this.width / 2, this.height);
+            this.drawTexturedModalRect(this.xPosition + this.width / 2, this.yPosition, 200 - this.width / 2, 46 + i * 20, this.width / 2, this.height);
             this.mouseDragged(mc, mouseX, mouseY);
             int j = 14737632;
 
@@ -46,14 +43,13 @@ public class FeatureButton extends GuiButton {
             else
             if (!this.enabled)
             {
-                j = 0xA0A0A0;
+                j = 10526880;
             }
             else if (this.hovered)
             {
-                j = 0xFFFFA0;
+                j = 16777120;
             }
-
-            this.drawCenteredString(fontrenderer, this.displayString, this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, j);
+            this.drawCenteredString(fontrenderer, feature.isEnabled() ? "§aON" : "§cOFF", this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, j);
         }
     }
 }

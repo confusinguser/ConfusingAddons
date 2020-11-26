@@ -8,7 +8,7 @@ public enum Feature {
     HIDE_JOIN_LEAVE_MESSAGES("Hide Join And Leave Messages"),
 //    CLEANER_KICK_ERROR_MESSAGES,
 //    SHOW_QUEUE_ESIMATE(),
-    COPY_NBT(false, "Copy NBT"),
+    COPY_NBT("Copy NBT", false),
     AUTO_OPEN_MADDOX_GUI("Auto Open Batphone GUI"),
     SWITCH_TO_BATPHONE_ON_SLAYER_DONE("Switch To Batphone When Slayer Killed");
 //    SHOW_PACKETS_IN_CHAT;
@@ -19,11 +19,11 @@ public enum Feature {
     String name;
 
     Feature(String name) {
-        this.showInMenu = false;
+        this.showInMenu = true;
         this.name = name;
     }
 
-    Feature(boolean showInMenu, String name) {
+    Feature(String name, boolean showInMenu) {
         this.showInMenu = showInMenu;
         this.name = name;
     }

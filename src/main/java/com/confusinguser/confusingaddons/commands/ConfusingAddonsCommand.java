@@ -1,8 +1,8 @@
 package com.confusinguser.confusingaddons.commands;
 
 import com.confusinguser.confusingaddons.ConfusingAddons;
+import com.confusinguser.confusingaddons.gui.ConfusingAddonsGui;
 import com.confusinguser.confusingaddons.utils.Feature;
-import gui.ConfusingAddonsGui;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.BlockPos;

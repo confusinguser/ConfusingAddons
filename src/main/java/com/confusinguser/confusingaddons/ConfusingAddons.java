@@ -1,14 +1,15 @@
 package com.confusinguser.confusingaddons;
 
 import com.confusinguser.confusingaddons.commands.ConfusingAddonsCommand;
-import com.confusinguser.confusingaddons.commands.FindprivatemegaCommand;
+import com.confusinguser.confusingaddons.commands.GChatCommand;
+import com.confusinguser.confusingaddons.commands.WarpCommand;
+import com.confusinguser.confusingaddons.listeners.ChatMessageListener;
 import com.confusinguser.confusingaddons.listeners.EventListener;
 import com.confusinguser.confusingaddons.utils.*;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
-import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -43,20 +44,22 @@ public class ConfusingAddons {
     @Mod.EventHandler
     public void init(FMLInitializationEvent e) {
         ClientCommandHandler.instance.registerCommand(new ConfusingAddonsCommand(this));
-//        ClientCommandHandler.instance.registerCommand(new GChatCommand());
-        ClientCommandHandler.instance.registerCommand(new FindprivatemegaCommand());
+        ClientCommandHandler.instance.registerCommand(new GChatCommand());
+        ClientCommandHandler.instance.registerCommand(new WarpCommand());
 
         eventListener = new EventListener(this);
+
+        MinecraftForge.EVENT_BUS.register(new ChatMessageListener());
         MinecraftForge.EVENT_BUS.register(eventListener);
         configValues.loadConfig();
     }
 
-    @Mod.EventHandler
+/*    @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent e) {
         Thread updateCheckerThread = new Thread(() -> {
 
         });
-    }
+    }*/
 
     public EventListener getEventListener() {
         return eventListener;

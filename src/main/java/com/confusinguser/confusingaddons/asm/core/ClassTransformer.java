@@ -15,7 +15,10 @@ public class ClassTransformer implements IClassTransformer {
             new EntityRendererTransformer(),
             new GuiScreenTransformer(),
             new GuiSelectWorldTransformer(),
-            new MinecraftTransformer()
+            new MinecraftTransformer(),
+            new GuiConfirmOpenLinkTransformer(),
+            new ChunkRenderWorkerTransformer(),
+            new ModelBipedTransformer()
     };
 
     @Override
