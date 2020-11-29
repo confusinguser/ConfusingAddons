@@ -19,7 +19,7 @@ public class GuiScreenTransformer implements ITransformer {
                 if (ASMUtils.insnQueryMatch(insn, Opcodes.ALOAD, 0) &&
                         ASMUtils.insnQueryMatch(insn = insn.getNext(), Opcodes.ALOAD, 3) &&
                         ASMUtils.insnQueryMatch(insn = insn.getNext(), Opcodes.PUTFIELD, "net/minecraft/client/gui/GuiScreen", "clickedLinkURI", "Ljava/net/URI;") &&
-                        ASMUtils.insnQueryMatch(insn = insn.getNext().getNext().getNext() /* 2x opcode -1 for some reason */, Opcodes.ALOAD, 0) &&
+                        ASMUtils.insnQueryMatch(insn = insn.getNext().getNext().getNext(), Opcodes.ALOAD, 0) &&
                         ASMUtils.insnQueryMatch(insn = insn.getNext(), Opcodes.GETFIELD, "net/minecraft/client/gui/GuiScreen", "mc", "Lnet/minecraft/client/Minecraft;") &&
                         ASMUtils.insnQueryMatch(insn = insn.getNext(), Opcodes.NEW, "net/minecraft/client/gui/GuiConfirmOpenLink") &&
                         ASMUtils.insnQueryMatch(insn = insn.getNext(), Opcodes.DUP) &&

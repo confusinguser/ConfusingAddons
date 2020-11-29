@@ -29,7 +29,8 @@ public class ConfusingHypixelAPI extends HypixelAPI {
                 getGuildByPlayer(Minecraft.getMinecraft().thePlayer.getUniqueID()).get().getGuild().getMembers()
                         .forEach(member -> {
                             try {
-                                guildMemberCache.add(getPlayerByUuid(member.getUuid()).get().getPlayer().get("displayname").getAsString());
+                                guildMemberCache.add(getPlayerByUuid(member.getUuid()).get().getPlayer()
+                                        .get("displayname").getAsString());
                             } catch (InterruptedException | ExecutionException e) {
                                 e.printStackTrace();
                             }

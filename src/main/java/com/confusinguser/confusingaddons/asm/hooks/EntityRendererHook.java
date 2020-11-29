@@ -1,5 +1,6 @@
 package com.confusinguser.confusingaddons.asm.hooks;
 
+import com.confusinguser.confusingaddons.utils.Feature;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.EntityLivingBase;
 import net.minecraft.entity.player.EntityPlayer;
@@ -10,7 +11,7 @@ public class EntityRendererHook {
     public static Entity lastEntityThatAttacked;
     
     public static void hurtCameraEffect(EntityLivingBase player) {
-        if (!(player instanceof EntityPlayer) || lastEntityThatAttacked == null) return;
+        if (!(player instanceof EntityPlayer) || !Feature.HURT_EFFECT_FIX.isEnabled() || lastEntityThatAttacked == null) return;
         double d1 = lastEntityThatAttacked.posX - player.posX;
         double d0;
 

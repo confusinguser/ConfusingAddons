@@ -8,6 +8,8 @@ import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.MethodNode;
 
+import java.util.logging.Logger;
+
 public class ClassTransformer implements IClassTransformer {
 
     private static final ITransformer[] transformers = {
@@ -17,7 +19,7 @@ public class ClassTransformer implements IClassTransformer {
             new GuiSelectWorldTransformer(),
             new MinecraftTransformer(),
             new GuiConfirmOpenLinkTransformer(),
-            new ChunkRenderWorkerTransformer(),
+//            new ChunkRenderWorkerTransformer(),
             new ModelBipedTransformer()
     };
 
@@ -25,7 +27,7 @@ public class ClassTransformer implements IClassTransformer {
     public byte[] transform(String name, String transformedName, byte[] basicClass) {
         for (ITransformer transformer : transformers) {
             if (transformer.getTargetClassName().equals(transformedName)) {
-                System.out.println("Started transforming " + transformer.getTargetClassName());
+                Logger.getLogger("ConfusingAddons").fine("Started transforming " + transformer.getTargetClassName());
                 ClassReader reader = new ClassReader(basicClass);
                 ClassNode classNode = new ClassNode();
                 reader.accept(classNode, ClassReader.SKIP_FRAMES);
@@ -33,7 +35,7 @@ public class ClassTransformer implements IClassTransformer {
                     String methodName = FMLDeobfuscatingRemapper.INSTANCE.mapMethodName(classNode.name, method.name, method.desc);
                     String methodDesc = FMLDeobfuscatingRemapper.INSTANCE.mapMethodDesc(method.desc);
                     if (transformer.transformMethod(method, methodName, methodDesc)) {
-                        System.out.println("Transformed successfully: " + transformer.getTargetClassName());
+                        Logger.getLogger("ConfusingAddons").fine("Transformed successfully: " + transformer.getTargetClassName());
                     }
                 }
                 ClassWriter writer = new ClassWriter(ClassWriter.COMPUTE_FRAMES);

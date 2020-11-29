@@ -3,29 +3,42 @@ package com.confusinguser.confusingaddons.utils;
 import com.confusinguser.confusingaddons.ConfusingAddons;
 
 public enum Feature {
-    HIDE_LOBBY_SPAM("Hide Lobby \"Spam\""),
-    SHOW_CLICK_COMMANDS("Show Click Commands"),
-    HIDE_JOIN_LEAVE_MESSAGES("Hide Join And Leave Messages"),
-//    CLEANER_KICK_ERROR_MESSAGES,
-//    SHOW_QUEUE_ESIMATE(),
-    COPY_NBT("Copy NBT", false),
-    AUTO_OPEN_MADDOX_GUI("Auto Open Batphone GUI"),
-    SWITCH_TO_BATPHONE_ON_SLAYER_DONE("Switch To Batphone When Slayer Killed");
-//    SHOW_PACKETS_IN_CHAT;
+    HIDE_LOBBY_SPAM("Hide lobby \"spam\""),
+    SHOW_CLICK_COMMANDS("Show click commands"),
+    HIDE_JOIN_LEAVE_MESSAGES("Hide join and leave messages"),
+    COPY_NBT("Copy NBT", false, false),
+    AUTO_OPEN_MADDOX_GUI("Auto open batphone GUI"),
+    SWITCH_TO_BATPHONE_WHEN_SLAYER_DONE("Switch to batphone when slayer done"),
+    HURT_EFFECT_FIX("Angle \"screen tilt\" when hurt to the side you were hit from"),
+    SKYBLOCK_TOOLTIP_FEATURES("Show when and by who (only dragon gear) skyblock item was obtained"),
+    DUNGEON_GEAR_TOOLTIP("Show what floor and what score dungeon gear has"),
+    DISABLE_SECURITY_WARNING("Disable trust warning when opening a link", false);
 
     protected boolean status;
 
     public boolean showInMenu;
-    String name;
+    private final String name;
+    private boolean defaultStatus;
 
     Feature(String name) {
-        this.showInMenu = true;
         this.name = name;
+        this.status = true;
+        this.defaultStatus = true;
+        this.showInMenu = true;
     }
 
-    Feature(String name, boolean showInMenu) {
-        this.showInMenu = showInMenu;
+    Feature(String name, boolean defaultStatus) {
         this.name = name;
+        this.status = defaultStatus;
+        this.defaultStatus = defaultStatus;
+        this.showInMenu = true;
+    }
+
+    Feature(String name, boolean defaultStatus, boolean showInMenu) {
+        this.name = name;
+        this.status = defaultStatus;
+        this.defaultStatus = defaultStatus;
+        this.showInMenu = showInMenu;
     }
 
     public static Feature getFeatureById(int id) {
@@ -66,5 +79,13 @@ public enum Feature {
 
     public String getIdString() {
         return String.valueOf(getId());
+    }
+
+    public boolean getDefaultStatus() {
+        return defaultStatus;
+    }
+
+    public void setDefaultStatus(boolean defaultStatus) {
+        this.defaultStatus = defaultStatus;
     }
 }

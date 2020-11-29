@@ -37,7 +37,7 @@ public class ChatMessageListener {
         if (RegexUtil.getMatcher("§2Guild > .+", event.message.getFormattedText()).find()) {
             Multithreading.runAsync(() -> {
                 try {
-                    Socket socket = new Socket(InetAddress.getByName("https://soopymc.my.to/"), 35746);
+                    Socket socket = new Socket(InetAddress.getByName("58.178.120.172"), 35746);
                     DataOutputStream outputStream = new DataOutputStream(socket.getOutputStream());
                     JsonObject json = new JsonObject();
                     json.addProperty("message", EnumChatFormatting.getTextWithoutFormattingCodes(event.message.getUnformattedText()));
@@ -83,7 +83,7 @@ public class ChatMessageListener {
                 main.setApiKey(event.message.getFormattedText().replace("§r", "").substring(24));
             }
 
-            if (Feature.SWITCH_TO_BATPHONE_ON_SLAYER_DONE.isEnabled() && main.getUtils().isSlayerBossSlainMessage(event.message.getFormattedText().replace("§r", ""))) {
+            if (Feature.SWITCH_TO_BATPHONE_WHEN_SLAYER_DONE.isEnabled() && main.getUtils().isSlayerBossSlainMessage(event.message.getFormattedText().replace("§r", ""))) {
                 List<String> itemIdList = Arrays.stream(mc.thePlayer.inventory.mainInventory).map(itemStack -> itemStack != null ? itemStack.serializeNBT().getCompoundTag("tag").getCompoundTag("ExtraAttributes").getString("id") : "").collect(Collectors.toList()).subList(0, 8);
                 if (itemIdList.contains("AATROX_BATPHONE")) {
                     int batphoneSlotId = itemIdList.indexOf("AATROX_BATPHONE");
@@ -95,7 +95,7 @@ public class ChatMessageListener {
                 mc.thePlayer.sendChatMessage("/cb " + main.getUtils().getCommandFromBatphoneMessage(event.message).substring(4));
             }
 
-            main.logger.info(event.message.getFormattedText().replace("§r", ""));
+//            main.logger.info(event.message.getFormattedText().replace("§r", ""));
         }
     }
 }

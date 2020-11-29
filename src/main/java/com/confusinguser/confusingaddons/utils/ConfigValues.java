@@ -64,7 +64,7 @@ public class ConfigValues {
     }
 
     private void setAllFeaturesToDefault() {
-        for (Feature feature : Feature.values()) feature.status = false;
+        for (Feature feature : Feature.values()) feature.status = feature.getDefaultStatus();
     }
 
     public void saveConfig() {

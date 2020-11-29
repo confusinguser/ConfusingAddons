@@ -70,7 +70,6 @@ public class MinecraftTransformer implements ITransformer {
                 insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/client/gui/GuiScreenWorking", "<init>", "()V", false));
                 insnList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/Minecraft", "displayGuiScreen", "(Lnet/minecraft/client/gui/GuiScreen;)V", false));
                 method.instructions.insert(temp.getNext().getNext(), insnList);
-                System.out.println("\n" + ASMUtils.getBytecodeFromMethodNode(method));
             }
         } /*else if (methodName.equals("func_71353_a") || methodName.equals("loadWorld")) {
             boolean found = false;

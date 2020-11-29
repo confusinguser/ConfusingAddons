@@ -221,10 +221,6 @@ public class Utils {
         return false;
     }
 
-    public boolean isInAnEmptyLobby() {
-        return Minecraft.getMinecraft().theWorld.playerEntities.stream().filter(player -> player.getUniqueID().version() == 4).count() < 10;
-    }
-
     public String stripWeirdChars(String input) {
         return stripWeirdCharsRegex.matcher(input).replaceAll("");
     }
@@ -233,8 +229,8 @@ public class Utils {
         return true;
     }
 
-    public boolean isRairityLine(String line) {
-        return line.contains("COMMON") || line.contains("UNCOMMON") || line.contains("RARE") || line.contains("EPIC") || line.contains("LEGENDARY") || line.contains("COMMON");
+    public boolean isRarityLine(String line) {
+        return line.contains("COMMON") || line.contains("UNCOMMON") || line.contains("RARE") || line.contains("EPIC") || line.contains("LEGENDARY") || line.contains("MYTHIC") || line.contains("SUPREME") || line.contains("SPECIAL");
     }
 
     public String getAuthorFromGuildChatMessage(String chatMessage) {

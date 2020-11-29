@@ -17,7 +17,7 @@ public class ItemStackTransformer implements ITransformer {
                 if (insn.getOpcode() == Opcodes.ARETURN) {
                     InsnList insnList = new InsnList();
                     insnList.add(new InsnNode(Opcodes.POP));
-                    insnList.add(new VarInsnNode(Opcodes.ALOAD, 0)); // add 'this' on stack
+                    insnList.add(new VarInsnNode(Opcodes.ALOAD, 0)); // this
                     insnList.add(new VarInsnNode(Opcodes.ALOAD, 3)); // The list with the tooltip (List<String>)
                     insnList.add(new MethodInsnNode(Opcodes.INVOKESTATIC, "com/confusinguser/confusingaddons/asm/hooks/ItemStackHook",
                             "getToolTip", "(Lnet/minecraft/item/ItemStack;Ljava/util/List;)Ljava/util/List;", false));

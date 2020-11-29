@@ -1,7 +1,6 @@
 package com.confusinguser.confusingaddons.asm;
 
 import com.confusinguser.confusingaddons.asm.core.ITransformer;
-import com.confusinguser.confusingaddons.asm.utils.ASMUtils;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
@@ -24,7 +23,6 @@ public class GuiConfirmOpenLinkTransformer implements ITransformer {
             insnList.add(new InsnNode(Opcodes.POP2));
             insnList.add(skipIfNull);
             method.instructions.insertBefore(method.instructions.getLast().getPrevious(), insnList);
-            System.out.println("\n" + ASMUtils.getBytecodeFromMethodNode(method));
             return true;
         }
         return false;
