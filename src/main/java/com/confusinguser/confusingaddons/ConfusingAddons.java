@@ -3,13 +3,16 @@ package com.confusinguser.confusingaddons;
 import com.confusinguser.confusingaddons.commands.ConfusingAddonsCommand;
 import com.confusinguser.confusingaddons.commands.GChatCommand;
 import com.confusinguser.confusingaddons.commands.WarpCommand;
+import com.confusinguser.confusingaddons.core.RuntimeInfo;
 import com.confusinguser.confusingaddons.listeners.ChatMessageListener;
 import com.confusinguser.confusingaddons.listeners.EventListener;
 import com.confusinguser.confusingaddons.utils.*;
+import com.google.gson.JsonObject;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
+import net.minecraftforge.fml.common.event.FMLPostInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLPreInitializationEvent;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -19,7 +22,7 @@ import java.util.UUID;
 @Mod(modid = ConfusingAddons.MODID, version = ConfusingAddons.VERSION, name = ConfusingAddons.MOD_NAME, clientSideOnly = true, acceptedMinecraftVersions = "[1.8.9]")
 public class ConfusingAddons {
     public static final String MODID = "ConfusingAddons";
-    public static final String VERSION = "1.0";
+    public static final String VERSION = "1.0-duheuty";
     public static final String MOD_NAME = "ConfusingAddons";
     private static ConfusingAddons instance;
     private EventListener eventListener;
@@ -30,6 +33,7 @@ public class ConfusingAddons {
     private ConfusingHypixelAPI API;
     private ConfigValues configValues;
     private String apiKey = "";
+    private RuntimeInfo runtimeInfo = new RuntimeInfo();
 
     public static ConfusingAddons getInstance() {
         return instance;
@@ -54,12 +58,18 @@ public class ConfusingAddons {
         configValues.loadConfig();
     }
 
-/*    @Mod.EventHandler
+    @Mod.EventHandler
     public void postInit(FMLPostInitializationEvent e) {
         Thread updateCheckerThread = new Thread(() -> {
-
+            JsonObject runtimeInfoJSON = apiUtils.getRuntimeInfo();
+                runtimeInfo = new RuntimeInfo(runtimeInfoJSON.get("downloadURL").getAsString(),
+                        runtimeInfoJSON.get("liveGCIP").getAsString(),
+                        !VERSION.equals(runtimeInfoJSON.get("latestVersion").getAsString()),
+                        runtimeInfoJSON.get("latestVersion").getAsString(),
+                        runtimeInfoJSON.get("directDownloadURL").getAsString());
         });
-    }*/
+        updateCheckerThread.start();
+    }
 
     public EventListener getEventListener() {
         return eventListener;
@@ -102,5 +112,9 @@ public class ConfusingAddons {
 
     public LangUtils getLangUtils() {
         return langUtils;
+    }
+
+    public RuntimeInfo getRuntimeInfo() {
+        return runtimeInfo;
     }
 }

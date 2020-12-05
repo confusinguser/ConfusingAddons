@@ -22,7 +22,7 @@ public class WarpCommand extends CommandBase {
     @Override
     public List<String> getCommandAliases() {
         return Collections.singletonList("w");
-    }
+    } // TODO toggle alias
 
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {

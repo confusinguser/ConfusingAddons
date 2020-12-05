@@ -2,16 +2,25 @@ package com.confusinguser.confusingaddons.listeners;
 
 import com.confusinguser.confusingaddons.ConfusingAddons;
 import com.confusinguser.confusingaddons.asm.hooks.EntityRendererHook;
+import com.confusinguser.confusingaddons.gui.BazaarGui;
 import com.confusinguser.confusingaddons.utils.Feature;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiScreen;
+import net.minecraft.client.gui.inventory.GuiChest;
 import net.minecraft.client.gui.inventory.GuiContainer;
 import net.minecraft.entity.player.EntityPlayerMP;
+import net.minecraft.event.ClickEvent;
+import net.minecraft.event.HoverEvent;
+import net.minecraft.inventory.ContainerChest;
 import net.minecraft.inventory.Slot;
+import net.minecraft.util.ChatComponentText;
+import net.minecraft.util.ChatStyle;
 import net.minecraft.util.EnumChatFormatting;
+import net.minecraftforge.client.event.GuiOpenEvent;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.event.entity.living.LivingAttackEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import net.minecraftforge.fml.common.gameevent.PlayerEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import org.lwjgl.input.Keyboard;
 
@@ -79,6 +88,37 @@ public class EventListener {
         if (guiToOpen != null) {
             Minecraft.getMinecraft().displayGuiScreen(guiToOpen);
             guiToOpen = null;
+        }
+    }
+
+    @SubscribeEvent
+    public void onJoinWorld(PlayerEvent.PlayerLoggedInEvent event) {
+        if (ConfusingAddons.getInstance().getRuntimeInfo().shouldSendUpdateNotification()) {
+            Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("§b[ConfusingAddons] §l§bA new update is available!"));
+            Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("§b[ConfusingAddons] New Version: §d" + main.getRuntimeInfo().getVersion() + "§b   Current Version: §d" + ConfusingAddons.VERSION));
+            Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("§b[ConfusingAddons] §6--------------------------------------------"));
+            Minecraft.getMinecraft().thePlayer.addChatComponentMessage(
+                    new ChatComponentText("[Download + Changelog]")
+                            .setChatStyle(new ChatStyle()
+                                    .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("§l§eClick!")))
+                                    .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, main.getRuntimeInfo().getDownloadURL())))
+
+
+                            .appendSibling(
+                                    new ChatComponentText(" ")
+                                            .appendSibling(new ChatComponentText("[Direct Download]")
+                                                    .setChatStyle(new ChatStyle()
+                                                            .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("§l§eClick!")))
+                                                            .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, main.getRuntimeInfo().getDirectDownloadURL()))))));
+            main.getRuntimeInfo().setSendUpdateNotification(false);
+        }
+    }
+
+    @SubscribeEvent
+    public void onOpenGui(GuiOpenEvent event) {
+        if (event.gui instanceof GuiChest && ((GuiChest) event.gui).inventorySlots instanceof ContainerChest && 
+                ((ContainerChest) ((GuiChest) event.gui).inventorySlots).getLowerChestInventory().getName().startsWith("Bazaar")) {
+            event.gui = new BazaarGui(mc.thePlayer.inventory, ((ContainerChest) ((GuiChest) event.gui).inventorySlots).getLowerChestInventory());
         }
     }
 

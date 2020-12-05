@@ -3,11 +3,6 @@ package com.confusinguser.confusingaddons.utils;
 import com.confusinguser.confusingaddons.ConfusingAddons;
 import com.google.gson.*;
 import net.hypixel.api.exceptions.HypixelAPIException;
-import net.minecraft.client.Minecraft;
-import net.minecraft.event.ClickEvent;
-import net.minecraft.event.HoverEvent;
-import net.minecraft.util.ChatComponentText;
-import net.minecraft.util.ChatStyle;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -130,31 +125,14 @@ public class ApiUtils {
         return null;
     }
 
-    public void getLatestUpdateInfoFile() {
+    public JsonObject getRuntimeInfo() {
+        URL url;
         try {
-            JsonObject jsonObject = getResponse(new URL("https://raw.githubusercontent.com/confusinguser/ConfusingAddons/master/updateInfo.txt?token=AGCCX4SV65SJN7H7HQR47QS7IP4TG")).getAsJsonObject();
-            if (!jsonObject.get("version").getAsString().equals(ConfusingAddons.VERSION)) {
-                Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("§b[ConfusingAddons] §l§bA new update is available!"));
-                Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("§b[ConfusingAddons] New Version: §d" + jsonObject.get("version").getAsString() + "§b   Current Version: §d" + ConfusingAddons.VERSION));
-                Minecraft.getMinecraft().thePlayer.addChatComponentMessage(new ChatComponentText("§b[ConfusingAddons] §6--------------------------------------------"));
-                Minecraft.getMinecraft().thePlayer.addChatComponentMessage(
-                        new ChatComponentText("[Download + Changelog]")
-                                .setChatStyle(new ChatStyle()
-                                        .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("§l§eClick!")))
-                                        .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, jsonObject.get("downloadUrl").getAsString())))
-
-
-                                .appendSibling(
-                                        new ChatComponentText(" ")
-                                                .appendSibling(new ChatComponentText("[Direct Download]")
-                                                        .setChatStyle(new ChatStyle()
-                                                                .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ChatComponentText("§l§eClick!")))
-                                                                .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, jsonObject.get("directDownloadUrl").getAsString()))))));
-
-            }
-        } catch (MalformedURLException | JsonIOException e) {
-            e.printStackTrace();
+            url = new URL("https://raw.githubusercontent.com/confusinguser/ConfusingAddons/master/updateInfo.json");
+        } catch (MalformedURLException e) {
+            return null;
         }
+        return getResponse(url).getAsJsonObject();
     }
 
     public void clearCaches() {
