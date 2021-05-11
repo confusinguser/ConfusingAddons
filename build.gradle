@@ -1,20 +1,8 @@
-buildscript {
-    repositories {
-        jcenter()
-        maven {
-            name = "forge"
-            url = "http://files.minecraftforge.net/maven"
-        }
-    }
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.1-SNAPSHOT'
-    }
-}
-
 plugins {
     id 'java'
     id 'maven'
-    id 'com.github.johnrengelman.shadow' version '4.0.4'
+    id 'net.minecraftforge.gradle.forge' version '581a86dcbe'
+    id 'com.github.johnrengelman.shadow' version '6.1.0'
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'

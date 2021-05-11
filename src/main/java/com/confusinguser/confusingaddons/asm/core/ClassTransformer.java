@@ -15,12 +15,14 @@ public class ClassTransformer implements IClassTransformer {
     private static final ITransformer[] transformers = {
             new ItemStackTransformer(),
             new EntityRendererTransformer(),
-            new GuiScreenTransformer(),
             new GuiSelectWorldTransformer(),
             new MinecraftTransformer(),
-            new GuiConfirmOpenLinkTransformer(),
-//            new ChunkRenderWorkerTransformer(),
-            new ModelBipedTransformer()
+            new GuiNewChatTransformer(),
+            new LayerHeldItemTransformer(),
+            new BlockTransformer(),
+            new GuiIngameTransformer(),
+            new NetHandlerPlayClientTransformer(),
+            new RenderPlayerTransformer()
     };
 
     @Override

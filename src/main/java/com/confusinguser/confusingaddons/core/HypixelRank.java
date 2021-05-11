@@ -1,4 +1,4 @@
-package com.confusinguser.confusingaddons.utils;
+package com.confusinguser.confusingaddons.core;
 
 public enum HypixelRank {
     NONE("§7"),

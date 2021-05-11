@@ -1,5 +1,6 @@
 package com.confusinguser.confusingaddons.utils;
 
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.hypixel.api.HypixelAPI;
@@ -21,38 +22,30 @@ public class ConfusingHypixelAPI extends HypixelAPI {
     private static final String USER_AGENT = "Mozilla/5.0";
 
     private final List<String> guildMemberCache = new ArrayList<>();
+    private final List<String> friendsCache = new ArrayList<>();
 
     public ConfusingHypixelAPI(UUID apiKey) {
         super(apiKey);
         Multithreading.runAsync(() -> {
+            UUID playerUUID = Minecraft.getMinecraft().thePlayer.getUniqueID();
             try {
-                getGuildByPlayer(Minecraft.getMinecraft().thePlayer.getUniqueID()).get().getGuild().getMembers()
-                        .forEach(member -> {
-                            try {
-                                guildMemberCache.add(getPlayerByUuid(member.getUuid()).get().getPlayer()
-                                        .get("displayname").getAsString());
-                            } catch (InterruptedException | ExecutionException e) {
-                                e.printStackTrace();
-                            }
-                        });
+                getGuildByPlayer(playerUUID).get().getGuild().getMembers()
+                        .forEach(member -> guildMemberCache.add(getNameByUUID(member.getUuid().toString())));
+                getFriends(playerUUID).get().getFriendShips()
+                        .forEach(friendShip -> friendsCache.add(getNameByUUID(
+                                (friendShip.getUuidReceiver() == playerUUID ?
+                                        friendShip.getUuidSender() : friendShip.getUuidReceiver()).toString())));
             } catch (InterruptedException | ExecutionException e) {
                 e.printStackTrace();
             }
         });
     }
 
-    // Not as nicely done I know :/
-    public JsonObject getSkyblockProfileByUUID(UUID uuid) {
-        StringBuilder url_string = new StringBuilder(BASE_URL);
 
-        url_string.append("skyblock/profile");
-        url_string.append("?key=").append(super.getApiKey());
-
-        url_string.append("&profile=").append(uuid.toString().replace("-", ""));
-
+    public JsonObject getResponse(String urlString) {
         StringBuffer response;
         try {
-            URL url = new URL(url_string.toString());
+            URL url = new URL(urlString);
 
             HttpURLConnection con = (HttpURLConnection) url.openConnection();
             con.setRequestMethod("GET");
@@ -74,7 +67,7 @@ public class ConfusingHypixelAPI extends HypixelAPI {
                 e.printStackTrace();
                 Thread.currentThread().interrupt();
             }
-            return getSkyblockProfileByUUID(uuid);
+            return getResponse(urlString);
         }
 
         JsonObject jsonObject = new JsonParser().parse(response.toString()).getAsJsonObject();
@@ -87,7 +80,7 @@ public class ConfusingHypixelAPI extends HypixelAPI {
                 e.printStackTrace();
                 Thread.currentThread().interrupt();
             }
-            return getSkyblockProfileByUUID(uuid);
+            return getResponse(urlString);
 
         } else if (jsonObject.has("cause") && jsonObject.get("cause").getAsString().contentEquals("Invalid API key!")) {
             return null;
@@ -95,7 +88,23 @@ public class ConfusingHypixelAPI extends HypixelAPI {
         return jsonObject;
     }
 
+    public String getNameByUUID(String UUID) {
+        String urlString = "https://api.mojang.com/user/profiles/" + UUID.replace("-", "") + "/names";
+        JsonArray names = getResponse(urlString).getAsJsonArray();
+        return names.get(names.size() - 1).getAsJsonObject().get("name").getAsString();
+    }
+
+    // Not as nicely done I know :/
+    public JsonObject getSkyblockProfileByUUID(UUID uuid) {
+        String urlString = BASE_URL + "skyblock/profile?key=" + super.getApiKey() + "&profile=" + uuid.toString().replace("-", "");
+        return getResponse(urlString);
+    }
+
     public List<String> getGuildMembers() {
         return new ArrayList<>(guildMemberCache);
+    }
+
+    public List<String> getFriends() {
+        return new ArrayList<>(friendsCache);
     }
 }

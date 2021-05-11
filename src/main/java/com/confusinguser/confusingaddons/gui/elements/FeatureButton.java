@@ -1,12 +1,12 @@
-package com.confusinguser.confusingaddons.gui;
+package com.confusinguser.confusingaddons.gui.elements;
 
-import com.confusinguser.confusingaddons.utils.Feature;
+import com.confusinguser.confusingaddons.core.feature.Feature;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.FontRenderer;
-import net.minecraft.client.gui.GuiButton;
 import net.minecraft.client.renderer.GlStateManager;
+import net.minecraftforge.fml.client.config.GuiButtonExt;
 
-public class FeatureButton extends GuiButton {
+public class FeatureButton extends GuiButtonExt {
     Feature feature;
 
     public FeatureButton(int buttonId, int x, int y, Feature feature) {
@@ -21,8 +21,7 @@ public class FeatureButton extends GuiButton {
 
     @Override
     public void drawButton(Minecraft mc, int mouseX, int mouseY) {
-        if (this.visible)
-        {
+        if (this.visible) {
             FontRenderer fontrenderer = mc.fontRendererObj;
             mc.getTextureManager().bindTexture(buttonTextures);
             GlStateManager.color(1.0F, 1.0F, 1.0F, 1.0F);
@@ -51,5 +50,16 @@ public class FeatureButton extends GuiButton {
             }
             this.drawCenteredString(fontrenderer, feature.isEnabled() ? "§aON" : "§cOFF", this.xPosition + this.width / 2, this.yPosition + (this.height - 8) / 2, j);
         }
+    }
+
+    /**
+     * Invoked by ConfusingAddons
+     */
+    public void actionPerformed() {
+        getFeature().setStatus(!getFeature().isEnabled());
+    }
+
+    public Feature getFeature() {
+        return feature;
     }
 }

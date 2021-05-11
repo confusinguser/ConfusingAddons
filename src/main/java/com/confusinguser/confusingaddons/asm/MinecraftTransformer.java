@@ -12,64 +12,28 @@ public class MinecraftTransformer implements ITransformer {
 
     @Override
     public boolean transformMethod(MethodNode method, String methodName, String methodDesc) {
-        boolean found = false;
-        if (methodName.equals("runGameLoop") || methodName.equals("func_71411_J")) {
+        if (methodName.equals("runGameLoop") || methodName.equals("func_71411_J")) { // MC-128 3rd person view reverts to 1st person view if head inside a block (corner a one block wide tunnel in a minecart, ride on a horse through a block, piston...).
+            ASMUtils.deleteLines(method.instructions, 1116, 1118);
+            methodsFound++;
+        } else if (methodName.equals("launchIntegratedServer") || methodName.equals("func_71371_a")) { // MC-185 Creating or loading a singleplayer world shows the main menu for a brief second.
             Iterator<AbstractInsnNode> iterator = method.instructions.iterator();
             while (iterator.hasNext()) {
                 AbstractInsnNode insn = iterator.next();
-                if (ASMUtils.insnQueryMatch(insn, Opcodes.INVOKEVIRTUAL, "net/minecraft/client/entity/EntityPlayerSP", "isEntityInsideOpaqueBlock", "()Z") &&
-                        ASMUtils.insnQueryMatch(insn = insn.getNext(), Opcodes.IFEQ) &&
-                        ASMUtils.insnQueryMatch(insn = insn.getNext().getNext().getNext() /* 2x opcode -1 for some reason */, Opcodes.ALOAD, 0) &&
-                        ASMUtils.insnQueryMatch(insn = insn.getNext(), Opcodes.GETFIELD, "net/minecraft/client/Minecraft", "gameSettings", "Lnet/minecraft/client/settings/GameSettings;") &&
-                        ASMUtils.insnQueryMatch(insn = insn.getNext(), Opcodes.ICONST_0) &&
-                        ASMUtils.insnQueryMatch(insn = insn.getNext(), Opcodes.PUTFIELD, "net/minecraft/client/settings/GameSettings", "thirdPersonView", "I")) {
-                    AbstractInsnNode temp = insn.getPrevious(); // Because next and prev become null when the insn is removed
-                    method.instructions.remove(insn);
-                    for (int i = 0; i < 3; i++) {
-                        insn = temp;
-                        temp = temp.getPrevious();
-                        if (temp.getOpcode() == -1) {
-                            temp = temp.getPrevious();
-                            if (temp.getOpcode() == -1) temp = temp.getPrevious();
-                        }
-                        method.instructions.remove(insn);
-                    }
-
-                    methodsFound++;
-                }
-            }
-        } else if (methodName.equals("launchIntegratedServer")) {
-            Iterator<AbstractInsnNode> iterator = method.instructions.iterator();
-            AbstractInsnNode insn = null;
-            while (iterator.hasNext()) {
-                insn = iterator.next();
                 if (ASMUtils.insnQueryMatch(insn, -1, 2335)) {
                     insn = insn.getNext().getNext().getNext().getNext();
-                    found = true;
                     methodsFound++;
+                    insn = ASMUtils.removeInstructionsBefore(method.instructions, insn, 3, false);
+
+                    InsnList insnList = new InsnList();
+                    insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
+                    insnList.add(new TypeInsnNode(Opcodes.NEW, "net/minecraft/client/gui/GuiScreenWorking"));
+                    insnList.add(new InsnNode(Opcodes.DUP));
+                    insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/client/gui/GuiScreenWorking", "<init>", "()V", false));
+                    insnList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/Minecraft", "displayGuiScreen", "(Lnet/minecraft/client/gui/GuiScreen;)V", false));
+                    method.instructions.insert(insn, insnList);
+
                     break;
                 }
-            }
-            if (found && insn != null) {
-                AbstractInsnNode temp = insn.getPrevious(); // Because next and prev become null when the insn is removed
-                method.instructions.remove(insn);
-                for (int i = 0; i < 3; i++) {
-                    insn = temp;
-                    temp = temp.getPrevious();
-                    if (temp.getOpcode() == -1) {
-                        temp = temp.getPrevious();
-                        if (temp.getOpcode() == -1) temp = temp.getPrevious();
-                    }
-                    method.instructions.remove(insn);
-                }
-
-                InsnList insnList = new InsnList();
-                insnList.add(new VarInsnNode(Opcodes.ALOAD, 0));
-                insnList.add(new TypeInsnNode(Opcodes.NEW, "net/minecraft/client/gui/GuiScreenWorking"));
-                insnList.add(new InsnNode(Opcodes.DUP));
-                insnList.add(new MethodInsnNode(Opcodes.INVOKESPECIAL, "net/minecraft/client/gui/GuiScreenWorking", "<init>", "()V", false));
-                insnList.add(new MethodInsnNode(Opcodes.INVOKEVIRTUAL, "net/minecraft/client/Minecraft", "displayGuiScreen", "(Lnet/minecraft/client/gui/GuiScreen;)V", false));
-                method.instructions.insert(temp.getNext().getNext(), insnList);
             }
         } /*else if (methodName.equals("func_71353_a") || methodName.equals("loadWorld")) {
             boolean found = false;
@@ -91,7 +55,7 @@ public class MinecraftTransformer implements ITransformer {
                 method.instructions.insert(insn, new InsnNode(Opcodes.POP2));
             }
         }*/
-        return methodsFound >= 3 && found;
+        return methodsFound >= 2;
     }
 
     @Override

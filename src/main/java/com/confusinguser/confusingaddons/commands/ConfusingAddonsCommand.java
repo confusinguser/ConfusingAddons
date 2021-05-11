@@ -1,8 +1,10 @@
 package com.confusinguser.confusingaddons.commands;
 
 import com.confusinguser.confusingaddons.ConfusingAddons;
-import com.confusinguser.confusingaddons.gui.ConfusingAddonsGui;
-import com.confusinguser.confusingaddons.utils.Feature;
+import com.confusinguser.confusingaddons.core.feature.Category;
+import com.confusinguser.confusingaddons.core.feature.Feature;
+import com.confusinguser.confusingaddons.gui.SettingsGui;
+import com.confusinguser.confusingaddons.utils.Utils;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.BlockPos;
@@ -51,28 +53,28 @@ public class ConfusingAddonsCommand extends CommandBase {
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
         if (args.length == 0) {
-            main.getEventListener().setGuiToOpen(new ConfusingAddonsGui());
+            main.getEventListener().setGuiToOpen(new SettingsGui(Category.MAIN));
             return;
         }
         if (args[0].equalsIgnoreCase("nbt")) {
             boolean status;
             if (args.length == 1) {
-                status = !Feature.COPY_NBT.isEnabled();
+                status = !Feature.isEnabled("COPY_NBT");
             } else {
-                status = main.getUtils().interpretBooleanString(args[1]);
+                status = Utils.interpretBooleanString(args[1]);
             }
-            Feature.COPY_NBT.setStatus(status);
-            if (status) main.getUtils().sendMessageToPlayer("Copy NBT when [right ctrl] is pressed enabled!", EnumChatFormatting.GREEN);
-            else main.getUtils().sendMessageToPlayer("Copy NBT when [right ctrl] is pressed disabled!", EnumChatFormatting.RED);
+            Feature.getFeatureById("COPY_NBT").setStatus(status);
+            if (status) Utils.sendMessageToPlayer("Copy NBT when [right ctrl] is pressed enabled!", EnumChatFormatting.GREEN);
+            else Utils.sendMessageToPlayer("Copy NBT when [right ctrl] is pressed disabled!", EnumChatFormatting.RED);
         } else if (args[0].equalsIgnoreCase("setkey")) {
             if (args.length == 1) {
-                main.getUtils().sendMessageToPlayer("Usage: /ca setkey <your-api-key>", EnumChatFormatting.RED);
+                Utils.sendMessageToPlayer("Usage: /ca setkey <your-api-key>", EnumChatFormatting.RED);
             } else {
                 try {
                     main.setApiKey(args[1]);
-                    main.getUtils().sendMessageToPlayer("API key is now set to " + args[1], EnumChatFormatting.RED);
+                    Utils.sendMessageToPlayer("API key is now set to " + args[1], EnumChatFormatting.RED);
                 } catch (IllegalArgumentException e) {
-                    main.getUtils().sendMessageToPlayer("That is not a valid API key!", EnumChatFormatting.RED);
+                    Utils.sendMessageToPlayer("That is not a valid API key!", EnumChatFormatting.RED);
                 }
             }
         }

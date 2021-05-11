@@ -1,6 +1,8 @@
 package com.confusinguser.confusingaddons.utils;
 
 import com.confusinguser.confusingaddons.ConfusingAddons;
+import com.confusinguser.confusingaddons.core.HypixelRank;
+import com.confusinguser.confusingaddons.utils.bazaar.BazaarProduct;
 import com.google.gson.*;
 import net.hypixel.api.exceptions.HypixelAPIException;
 
@@ -11,18 +13,28 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 
-public class ApiUtils {
+public class ApiUtil {
 
     ConfusingAddons main;
     boolean busy = false;
     private Map<String, String> uuidToUsernameCache = new HashMap<>();
 
-    public ApiUtils(ConfusingAddons main) {
+    public ApiUtil(ConfusingAddons main) {
         this.main = main;
+    }
+
+    public JsonElement getResponse(String urlString) {
+        try {
+            return getResponse(new URL(urlString));
+        } catch (MalformedURLException e) {
+            return null;
+        }
     }
 
     public JsonElement getResponse(URL url) {
@@ -63,13 +75,10 @@ public class ApiUtils {
         }
     }
 
-
-
     public String getDisplayNameFromUUID(String uuid) {
         if (uuidToUsernameCache.containsKey(uuid)) {
             return uuidToUsernameCache.get(uuid);
         }
-
         if (busy) {
             return null;
         } else {
@@ -77,7 +86,7 @@ public class ApiUtils {
                 busy = true;
                 try {
                     if (main.getAPI() == null) {
-                        JsonElement nameHistory = getResponse(new URL("https://api.mojang.com/user/profiles/" + uuid + "/names")).getAsJsonArray();
+                        JsonElement nameHistory = getResponse("https://api.mojang.com/user/profiles/" + uuid + "/names").getAsJsonArray();
                         if (nameHistory == null) {
                             uuidToUsernameCache.put(uuid, "§cError");
                             return;
@@ -104,18 +113,14 @@ public class ApiUtils {
                     }
                     return;
 
-                } catch (IOException | InterruptedException e) {
-                    if (e instanceof IOException && e.getMessage().contains("Server returned HTTP response code: 400 for URL")) {
-                        uuidToUsernameCache.put(uuid, "§cError");
-                    } else {
-                        e.printStackTrace();
-                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 } catch (ExecutionException e) {
                     if (e.getCause() instanceof HypixelAPIException) {
-                        if (e.getCause().getMessage().equals("Malformed UUID")) {
+                        if (e.getCause().getMessage().equals("Invalid API key")) {
+                            Utils.handleInvalidApiKey();
+                        } else {
                             uuidToUsernameCache.put(uuid, "§cError");
-                        } else if (e.getCause().getMessage().equals("Invalid API key")) {
-                            main.getUtils().handleInvalidApiKey();
                         }
                     }
                 }
@@ -125,10 +130,27 @@ public class ApiUtils {
         return null;
     }
 
+    public List<BazaarProduct> getBazaarProducts() {
+        String url = "https://api.hypixel.net/skyblock/bazaar" + "?key=" + main.getApiKey();
+        JsonObject response = getResponse(url).getAsJsonObject();
+        response = response.getAsJsonObject("products");
+
+        List<BazaarProduct> output = new ArrayList<>();
+        for (Map.Entry<String, JsonElement> entry : response.entrySet()) {
+            output.add(new BazaarProduct(
+                    entry.getKey(),
+                    Math.round(Utils.getBestOfferFromArray(entry.getValue().getAsJsonObject().getAsJsonArray("buy_summary"), false) * 10) / 10d,
+                    Math.round(Utils.getBestOfferFromArray(entry.getValue().getAsJsonObject().getAsJsonArray("sell_summary"), true) * 10) / 10d,
+                    entry.getValue().getAsJsonObject().getAsJsonObject("quick_status").get("sellMovingWeek").getAsInt()
+            ));
+        }
+        return output;
+    }
+
     public JsonObject getRuntimeInfo() {
         URL url;
         try {
-            url = new URL("https://raw.githubusercontent.com/confusinguser/ConfusingAddons/master/updateInfo.json");
+            url = new URL("https://raw.githubusercontent.com/confusinguser/ConfusingAddons/master/RuntimeInfo.json");
         } catch (MalformedURLException e) {
             return null;
         }

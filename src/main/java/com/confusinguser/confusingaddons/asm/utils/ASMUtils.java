@@ -3,7 +3,10 @@ package com.confusinguser.confusingaddons.asm.utils;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.tree.*;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Iterator;
+import java.util.List;
 import java.util.stream.Collectors;
 
 public class ASMUtils {
@@ -79,5 +82,45 @@ public class ASMUtils {
                 .filter(abstractInsnNode -> abstractInsnNode instanceof LabelNode)
                 .map(abstractInsnNode -> ((LabelNode) abstractInsnNode).getLabel().toString())
                 .collect(Collectors.toList()).indexOf((label.toString()));
+    }
+
+    /**
+     * @return The instruction right before the deleted bit, much like a cursor when you press the backspace key
+     * */
+    public static AbstractInsnNode removeInstructionsBefore(InsnList insnList, AbstractInsnNode insn, int howMany, boolean skipNonInstructions) {
+        AbstractInsnNode temp = insn.getPrevious(); // Because next and prev become null when the insn is removed
+        insnList.remove(insn);
+        for (int i = 0; i < howMany; i++) {
+            insn = temp;
+            temp = temp.getPrevious();
+            if (skipNonInstructions && temp.getOpcode() == -1) {
+                temp = temp.getPrevious();
+                if (temp.getOpcode() == -1) temp = temp.getPrevious();
+            }
+            insnList.remove(insn);
+        }
+        return temp;
+    }
+
+    public static void deleteLines(InsnList insnList, int... lineNums) {
+        Iterator<AbstractInsnNode> it = insnList.iterator();
+        List<AbstractInsnNode> toRemove = new ArrayList<>();
+        boolean insideTarget = false;
+        while (it.hasNext()) {
+            AbstractInsnNode insn = it.next();
+
+            if (insn.getNext() instanceof LineNumberNode) insideTarget = false;
+            if (insideTarget) toRemove.add(insn);
+
+            for (int lineNum : lineNums) {
+                if (insnQueryMatch(insn, -1, lineNum)) {
+                    insideTarget = true;
+                }
+            }
+        }
+
+        for (AbstractInsnNode remove : toRemove) {
+            insnList.remove(remove);
+        }
     }
 }

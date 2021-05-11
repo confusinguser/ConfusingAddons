@@ -5,7 +5,6 @@ import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.BlockPos;
 
-import java.util.Collections;
 import java.util.List;
 
 public class WarpCommand extends CommandBase {
@@ -18,11 +17,6 @@ public class WarpCommand extends CommandBase {
     public String getCommandUsage(ICommandSender sender) {
         return null;
     }
-
-    @Override
-    public List<String> getCommandAliases() {
-        return Collections.singletonList("w");
-    } // TODO toggle alias
 
     @Override
     public List<String> addTabCompletionOptions(ICommandSender sender, String[] args, BlockPos pos) {
@@ -45,8 +39,10 @@ public class WarpCommand extends CommandBase {
             switch (args[0].toLowerCase()) {
                 case "darkauction":
                     args[0] = "da";
+                    break;
                 case "h":
                     args[0] = "home";
+                    break;
                 case "mushroom":
                 case "mush":
                 case "sugar":

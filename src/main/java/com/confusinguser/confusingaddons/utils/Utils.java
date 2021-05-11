@@ -1,20 +1,22 @@
 package com.confusinguser.confusingaddons.utils;
 
 import com.confusinguser.confusingaddons.ConfusingAddons;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.entity.EntityPlayerSP;
 import net.minecraft.entity.Entity;
 import net.minecraft.event.ClickEvent;
-import net.minecraft.network.play.server.S02PacketChat;
+import net.minecraft.event.HoverEvent;
 import net.minecraft.scoreboard.Score;
 import net.minecraft.scoreboard.ScoreObjective;
 import net.minecraft.scoreboard.ScorePlayerTeam;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.*;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.util.vector.Vector2f;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
@@ -30,7 +32,10 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 public class Utils {
 
@@ -41,49 +46,55 @@ public class Utils {
     private static final Pattern stripWeirdCharsRegex = Pattern.compile("[^a-zA-Z-0-9/ ]");
     private static final String batphoneButtonMessage = "§2§l[OPEN MENU]";
     private static final String slayerBossSlainMessage = "§6§lNICE! SLAYER BOSS SLAIN!";
+    //Atomic because needs to be accessed by another thread in real time by LiveGcConnectionManager
+    private static AtomicBoolean onHypixel = new AtomicBoolean();
 
-    private final ConfusingAddons main;
-    private final String USER_AGENT = "Mozilla/5.0";
-    private final Map<Integer, Map.Entry<Runnable, Integer>> scheduleQueue = new HashMap<>();
-    DateFormat dateFormat = new SimpleDateFormat("MM/dd/yy KK:mm aa");
-    DateFormat dateFormatOutput = new SimpleDateFormat("dd MMM yyyy 'at' KK:mm aa");
-    private int scheduleId = 0;
+    private static final ConfusingAddons main = ConfusingAddons.getInstance();
+    private static final String USER_AGENT = "Mozilla/5.0";
+    private static final Map<Integer, Map.Entry<Runnable, Integer>> scheduleQueue = new HashMap<>();
+    private static final DateFormat dateFormat = new SimpleDateFormat("MM/dd/yy KK:mm aa");
+    private static final DateFormat dateFormatOutput = new SimpleDateFormat("dd MMM yyyy 'at' KK:mm aa");
+    private static int scheduleId = 0;
 
-    public Utils(ConfusingAddons main) {
-        this.main = main;
-    }
-
-    public boolean interpretBooleanString(String input) {
+    public static boolean interpretBooleanString(String input) {
         input = input.replace("on", "true").replace("off", "false");
         return Boolean.parseBoolean(input);
     }
 
-    public void sendMessageToPlayer(String message, EnumChatFormatting color) {
-        Minecraft.getMinecraft().getNetHandler().handleChat(new S02PacketChat(new ChatComponentText(message).setChatStyle(new ChatStyle().setColor(color))));
+    public static void sendMessageToPlayer(String message) {
+        sendMessageToPlayer(new ChatComponentText(message));
     }
 
-    public boolean isLobbySpam(String message) {
+    public static void sendMessageToPlayer(IChatComponent message) {
+        ClientChatReceivedEvent event = new ClientChatReceivedEvent((byte) 1, fixChatComponentColors(message));
+        MinecraftForge.EVENT_BUS.post(event); // Let other mods pick up the new message
+        if (!event.isCanceled()) {
+            Minecraft.getMinecraft().thePlayer.addChatMessage(event.message);
+        }
+    }
+
+    public static void sendMessageToPlayer(String message, EnumChatFormatting color) {
+        sendMessageToPlayer(new ChatComponentText(message).setChatStyle(new ChatStyle().setColor(color)));
+    }
+
+    public static boolean isLobbySpam(String message) {
         message = message.replace("§r", "");
-        return RegexUtil.stringMatches("§b\\[MVP§[a-f1-9]\\+§b] \\w{3,16}§f§6 joined the lobby!", message) || // §b[MVP§9+§b] ConfusingUser§f§6 joined the lobby!)
-                RegexUtil.stringMatches(" §b>§c>§a> §[0-9a-f]\\[MVP§[0-9a-f]\\+\\+§[0-9a-f]] \\w{3,16}§f§6 joined the lobby! §a<§c<§b<", message) || //  §b>§c>§a> §6[MVP§9++§6] ConfusingUser§f§6 joined the lobby! §a<§c<§b<
+        return RegexUtil.stringMatches("§b\\[MVP§[a-f0-9]\\+§b] \\w{3,16}§f §6(?:joined|sled into) the lobby!", message) || // §b[MVP§9+§b] ConfusingUser§f §6joined the lobby!
+                RegexUtil.stringMatches(" §b>§c>§a> §[0-9a-f]\\[MVP§[0-9a-f]\\+\\+§[0-9a-f]] \\w{3,16}§f §(?:joined|sled into) the lobby! §a<§c<§b<", message) || //  §b>§c>§a> §6[MVP§9++§6] ConfusingUser§f §6joined the lobby! §a<§c<§b<
                 RegexUtil.stringMatches("§b\\[Mystery Box] (?:|§b)§f§[0-9a-f]\\w{3,16} §ffound a §[0-9a-f].*§f!", message) || // §b[Mystery Box] §f§aConfusingUser §ffound a §6Legendary Easter Egg Cloak§f!
                 RegexUtil.stringMatches("§[0-9a-f]\\w{3,16} §ffound a §e.{4}(?:§7|). §bMystery Box§f!", message) || // §7ConfusingUser §ffound a §e????? §bMystery Box§f!
                 RegexUtil.stringMatches("§b. (?:A|An) §[0-9a-f]§l[a-zA-Z0-9() ]+§[0-9a-f] game is (?:available to join|starting in 30 seconds)! §[0-9a-f]§lCLICK HERE§b to join!", message); // §b? A §e§lGalaxy Wars§b game is available to join! §6§lCLICK HERE§b to join!)
     }
 
-    public boolean isJoinLeaveMessage(String message) {
+    public static boolean isJoinLeaveMessage(String message) {
         return RegexUtil.stringMatches("(?:§2Guild|§aFriend) > §[0-9a-f]\\w{3,16} (?:§e|)(?:left|joined)\\.", message.replace("§r", "")); // §aFriend > §aConfusingUser §eleft. || §2Guild > §aConfusingUser §eleft.
     }
 
-    public String makeETAString(long etaMillis) {
-        return null;
-    }
-
-    public boolean isApiKeyUpdateMessage(String message) {
+    public static boolean isApiKeyUpdateMessage(String message) {
         return apiKeyUpdateRegex.matcher(message).matches();
     }
 
-    public Map.Entry<String, UUID> getUUIDByUsername(String username) {
+    public static Map.Entry<String, UUID> getUUIDByUsername(String username) {
         StringBuilder response = new StringBuilder();
         try {
             URL url = new URL("https://api.mojang.com/users/profiles/minecraft/" + username);
@@ -110,20 +121,20 @@ public class Utils {
         }
     }
 
-    public MovingObjectPosition rayTraceWithLiquid(Entity entity, double blockReachDistance, float partialTicks) {
+    public static MovingObjectPosition rayTraceWithLiquid(Entity entity, double blockReachDistance, float partialTicks) {
         Vec3 vec3 = entity.getPositionEyes(partialTicks);
         Vec3 vec31 = entity.getLook(partialTicks);
         Vec3 vec32 = vec3.addVector(vec31.xCoord * blockReachDistance, vec31.yCoord * blockReachDistance, vec31.zCoord * blockReachDistance);
         return entity.worldObj.rayTraceBlocks(vec3, vec32, true, false, true);
     }
 
-    public double distanceToCenterPlaneBlock(BlockPos blockPos, Vec3 to) {
+    public static double distanceToCenterPlaneBlock(BlockPos blockPos, Vec3 to) {
         double d0 = (double) blockPos.getX() + 0.5D - to.xCoord;
         double d2 = (double) blockPos.getZ() + 0.5D - to.zCoord;
         return Math.sqrt(d0 * d0 + d2 * d2);
     }
 
-    public void delayRunnableForXTicks(Runnable runnable, int ticks) {
+    public static void delayRunnableForXTicks(Runnable runnable, int ticks) {
         for (Map.Entry<Integer, Map.Entry<Runnable, Integer>> entry : scheduleQueue.entrySet()) {
             if (entry.getValue().getKey().equals(runnable)) {
                 return;
@@ -132,7 +143,7 @@ public class Utils {
         scheduleQueue.put(++scheduleId, new AbstractMap.SimpleEntry<>(runnable, ticks));
     }
 
-    public void tickQueue() {
+    public static void tickQueue() {
         List<Integer> toRemove = new ArrayList<>();
         for (Map.Entry<Integer, Map.Entry<Runnable, Integer>> entry : scheduleQueue.entrySet()) {
             entry.getValue().setValue(entry.getValue().getValue() - 1);
@@ -146,11 +157,11 @@ public class Utils {
             scheduleQueue.remove(id);
     }
 
-    public boolean isSlayerBossSlainMessage(String message) {
+    public static boolean isSlayerBossSlainMessage(String message) {
         return message.contains(slayerBossSlainMessage);
     }
 
-    public String getCommandFromBatphoneMessage(IChatComponent message) {
+    public static String getCommandFromBatphoneMessage(IChatComponent message) {
         if (message.getFormattedText().replace("§r", "").contains(batphoneButtonMessage)) {
             List<IChatComponent> siblings = new ArrayList<>();
             siblings.add(message);
@@ -164,11 +175,11 @@ public class Utils {
         return null;
     }
 
-    public boolean playerCurrentlyFightingBoss() {
+    public static boolean playerCurrentlyFightingBoss() {
         return Minecraft.getMinecraft().theWorld.getScoreboard().getObjectiveNames().stream().anyMatch(objective -> objective.contains("Slay the boss!"));
     }
 
-    public String formatTimestamp(String timestamp) {
+    public static String formatTimestamp(String timestamp) {
         try {
             return dateFormatOutput.format(dateFormat.parse(timestamp));
         } catch (ParseException ignored) {
@@ -176,12 +187,12 @@ public class Utils {
         }
     }
 
-    public void handleInvalidApiKey() {
+    public static void handleInvalidApiKey() {
         sendMessageToPlayer("Your API key is invalid and was removed\n§cTo generate a new one, type §b'/api new'", EnumChatFormatting.RED);
         main.resetAPIKey();
     }
 
-    public String getSystemClipboardContents() {
+    public static String getSystemClipboardContents() {
         try {
             Transferable clipboard = Toolkit.getDefaultToolkit().getSystemClipboard().getContents(null);
             return clipboard == null ? "" : (String) clipboard.getTransferData(DataFlavor.stringFlavor);
@@ -190,7 +201,7 @@ public class Utils {
         }
     }
 
-    public boolean isKeyOrMouseButtonDown(int keyOrButtonCode) {
+    public static boolean isKeyOrMouseButtonDown(int keyOrButtonCode) {
         try {
             return Keyboard.isKeyDown(keyOrButtonCode);
         } catch (IndexOutOfBoundsException ex) {
@@ -203,7 +214,7 @@ public class Utils {
         }
     }
 
-    public boolean isInAPrivateMega() {
+    public static boolean isInAPrivateMega() {
         Scoreboard scoreboard = Minecraft.getMinecraft().theWorld.getScoreboard();
         ScoreObjective sidebarObjective = scoreboard.getObjectiveInDisplaySlot(1);
         if (sidebarObjective != null) {
@@ -221,65 +232,169 @@ public class Utils {
         return false;
     }
 
-    public String stripWeirdChars(String input) {
+    public static String stripWeirdChars(String input) {
         return stripWeirdCharsRegex.matcher(input).replaceAll("");
     }
 
-    public boolean showMessageOnRightSide(IChatComponent message) {
+    public static boolean showMessageOnRightSide(IChatComponent message) {
         return true;
     }
 
-    public boolean isRarityLine(String line) {
+    public static boolean isRarityLine(String line) {
         return line.contains("COMMON") || line.contains("UNCOMMON") || line.contains("RARE") || line.contains("EPIC") || line.contains("LEGENDARY") || line.contains("MYTHIC") || line.contains("SUPREME") || line.contains("SPECIAL");
     }
 
-    public String getAuthorFromGuildChatMessage(String chatMessage) {
-//        if (chatMessage.chars().filter(aChar -> aChar == ']').count() == 2)
-//            return EnumChatFormatting.getTextWithoutFormattingCodes(chatMessage.substring(chatMessage.indexOf(']') + 2).split(":")[0]);
-//        else
-            return EnumChatFormatting.getTextWithoutFormattingCodes(chatMessage).split(":")[0].substring(8);
+    public static void sendUpdateNotification() {
+        EntityPlayerSP thePlayer = Minecraft.getMinecraft().thePlayer;
+        sendMessageToPlayer(new ChatComponentText("§6-----------------------------------------------"));
+        sendMessageToPlayer(new ChatComponentText("§f[§7Confusing§bAddons§f] §9§lA new update is available!"));
+        sendMessageToPlayer(new ChatComponentText("§f[§7Confusing§bAddons§f] §aNew Version: §l" + main.getRuntimeInfo().getLatestVersion() + "§r§c   Current Version: §l" + ConfusingAddons.VERSION));
+        sendMessageToPlayer(new ChatComponentText("§6-----------------------------------------------"));
+        sendMessageToPlayer(
+                new ChatComponentText("§a[Download + Changelog]")
+                        .setChatStyle(new ChatStyle()
+                                .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, fixChatComponentColors(new ChatComponentText("§e§lClick!§r"))))
+                                .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, main.getRuntimeInfo().getDownloadURL())))
 
+                        .appendSibling(new ChatComponentText(" ").setChatStyle(new ChatStyle()))
+                        .appendSibling(new ChatComponentText("§9[Direct Download]")
+                                .setChatStyle(new ChatStyle()
+                                        .setChatHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, fixChatComponentColors(new ChatComponentText("§e§lClick!§r"))))
+                                        .setChatClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, main.getRuntimeInfo().getDirectDownloadURL())))
+                        )
+        );
     }
 
-    public String getMessageFromGuildChatMessage(String chatMessage) {
-        return EnumChatFormatting.getTextWithoutFormattingCodes(chatMessage.split(":")[1]);
+    public static IChatComponent fixChatComponentColors(IChatComponent input) {
+        List<IChatComponent> components = new ArrayList<>(input.getSiblings());
+        components.add(0, input);
+        IChatComponent output = new ChatComponentText("");
+        for (IChatComponent componentParent : components) {
+            EnumChatFormatting colorToUse = EnumChatFormatting.WHITE;
+            if (!(componentParent instanceof ChatComponentText)) {
+                output.appendSibling(componentParent);
+                continue;
+            }
+            List<String> temp = new ArrayList<>(Arrays.asList((componentParent.getChatStyle().getFormattingCode() + componentParent.getUnformattedTextForChat()).split("\u00A7(?=[a-fA-F0-9lLkKmMnNoOrR])")));
+            List<ChatComponentText> componentChildren = new ArrayList<>();
+            if (!temp.isEmpty() && !temp.get(0).isEmpty()) componentChildren.add((ChatComponentText) new ChatComponentText(temp.get(0)).setChatStyle(componentParent.getChatStyle().createDeepCopy()));
+            componentChildren.addAll(temp.subList(1, temp.size()).stream().map(component ->
+                    (ChatComponentText) new ChatComponentText("\u00A7" + component).setChatStyle(componentParent.getChatStyle().createDeepCopy())).collect(Collectors.toList()));
+
+            int prevStyleCodeIndex = 15;
+            for (ChatComponentText componentChild : componentChildren) {
+                boolean randomStyle = false;
+                boolean boldStyle = false;
+                boolean strikethroughStyle = false;
+                boolean underlineStyle = false;
+                boolean italicStyle = false;
+                int styleCodeIndex;
+                char[] charArray;
+                if (componentChild.getFormattedText().endsWith("§r")) charArray = componentChild.getFormattedText().substring(0, componentChild.getFormattedText().length() - 2).toCharArray();
+                else charArray = componentChild.getFormattedText().toCharArray();
+                for (int i = 0, charArrayLength = charArray.length; i < charArrayLength; i++) {
+                    char c = charArray[i];
+                    if (c == 167 && i + 1 < componentChild.getFormattedText().length()) {
+                        styleCodeIndex = "0123456789abcdefklmnor".indexOf(componentChild.getFormattedText().toLowerCase(Locale.ENGLISH).charAt(i + 1));
+
+                        if (styleCodeIndex < 16) {
+                            randomStyle = false;
+                            boldStyle = false;
+                            strikethroughStyle = false;
+                            underlineStyle = false;
+                            italicStyle = false;
+
+                            if (styleCodeIndex < 0) {
+                                styleCodeIndex = 15;
+                            }
+
+                        } else if (styleCodeIndex == 16) {
+                            randomStyle = true;
+                        } else if (styleCodeIndex == 17) {
+                            boldStyle = true;
+                        } else if (styleCodeIndex == 18) {
+                            strikethroughStyle = true;
+                        } else if (styleCodeIndex == 19) {
+                            underlineStyle = true;
+                        } else if (styleCodeIndex == 20) {
+                            italicStyle = true;
+                        } else {
+                            randomStyle = false;
+                            boldStyle = false;
+                            strikethroughStyle = false;
+                            underlineStyle = false;
+                            italicStyle = false;
+                            styleCodeIndex = 15;
+                        }
+
+                        for (EnumChatFormatting testColor : EnumChatFormatting.values()) {
+                            if (testColor.getColorIndex() == styleCodeIndex) {
+                                colorToUse = testColor;
+                                break;
+                            }
+                        }
+                    }
+                }
+                ChatStyle chatStyle = componentChild.getChatStyle()
+                        .setColor(colorToUse)
+                        .setBold(boldStyle)
+                        .setItalic(italicStyle)
+                        .setObfuscated(randomStyle)
+                        .setStrikethrough(strikethroughStyle)
+                        .setUnderlined(underlineStyle);
+                IChatComponent lemp = output.appendSibling(new ChatComponentText(EnumChatFormatting.getTextWithoutFormattingCodes(componentChild.getUnformattedText())).setChatStyle(chatStyle));
+            }
+        }
+        return output;
     }
 
-    /*public void setKeyState(int keyCode, boolean keyState) {
-        if (keyDownBuffer_ref == null) {
-            try {
-                keyDownBuffer_ref = Keyboard.class.getDeclaredField("keyDownBuffer");
-                keyDownBuffer_ref.setAccessible(true);
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
+    public static double getBestOfferFromArray(JsonArray jsonArray, boolean isSellPrice) {
+        int bestOfferIndex = 0;
+        int currentIndex = 0;
+        for (JsonElement jsonElement : jsonArray) {
+            JsonObject jsonObject = jsonElement.getAsJsonObject();
+            if (isSellPrice) {
+                if (jsonObject.get("pricePerUnit").getAsDouble() > jsonArray.get(bestOfferIndex).getAsJsonObject().get("pricePerUnit").getAsDouble()) {
+                    bestOfferIndex = currentIndex;
+                }
+            } else {
+                if (jsonObject.get("pricePerUnit").getAsDouble() < jsonArray.get(bestOfferIndex).getAsJsonObject().get("pricePerUnit").getAsDouble()) {
+                    bestOfferIndex = currentIndex;
+                }
             }
+            currentIndex++;
         }
-        if (readBuffer_ref == null) {
-            try {
-                readBuffer_ref = Keyboard.class.getDeclaredField("readBuffer");
-                readBuffer_ref.setAccessible(true);
-            } catch (NoSuchFieldException e) {
-                e.printStackTrace();
-            }
+        if (jsonArray.size() == 0) {
+            return 0;
         }
-        try {
-            ByteBuffer keyDownBuffer = (ByteBuffer) keyDownBuffer_ref.get(null);
-            int old_position = keyDownBuffer.position();
-            keyDownBuffer.put(keyCode, keyState ? (byte) 1 : (byte) 0);
-            keyDownBuffer.position(old_position);
-        } catch (IllegalAccessException | IndexOutOfBoundsException e) {
-            e.printStackTrace();
-        }
+        return jsonArray.get(bestOfferIndex).getAsJsonObject().get("pricePerUnit").getAsDouble();
+    }
 
-        try {
-            ByteBuffer readBuffer = (ByteBuffer) readBuffer_ref.get(null);
-            ByteBuffer tmp_event = BufferUtils.createByteBuffer(18);
-            tmp_event.putInt(keyCode).put(keyState ? (byte) 1 : (byte) 0).putInt(keyCode).putLong(100 * 1000000).put((byte) 0);
-            tmp_event.flip();
-            readBuffer.clear();
-            readBuffer.put(tmp_event);
-        } catch (IllegalAccessException | IndexOutOfBoundsException e) {
-            e.printStackTrace();
+    // From SkyblockAddons
+    public static void refreshHypixelJoinment() {
+        Minecraft mc = Minecraft.getMinecraft();
+
+        if (!mc.isSingleplayer() && mc.thePlayer.getClientBrand() != null) {
+            Matcher matcher = RegexUtil.getMatcher("(.+)(?= <-.+)", mc.thePlayer.getClientBrand());
+
+            if (matcher.find()) {
+                onHypixel.set(matcher.group(0).startsWith("Hypixel BungeeCord"));
+                return;
+            }
         }
-    }*/
+        onHypixel.set(false);
+    }
+
+    public static boolean isOnHypixel() {
+        return onHypixel.get();
+    }
+
+    public static double round(double input, int places) {
+        double factor = Math.pow(10, places);
+        return Math.round(input * factor) / factor;
+    }
+
+    public static boolean inBoundingBox(Vector2f pos, Vector2f bb1, Vector2f bb2) {
+        return pos.x > bb1.x && pos.y > bb1.y && pos.x < bb2.x && pos.y < bb2.y;
+    }
 }

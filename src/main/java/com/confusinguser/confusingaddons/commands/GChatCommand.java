@@ -5,6 +5,9 @@ import net.minecraft.client.Minecraft;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.util.BlockPos;
+import net.minecraft.util.ChatComponentText;
+import net.minecraftforge.client.event.ClientChatReceivedEvent;
+import net.minecraftforge.common.MinecraftForge;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -47,6 +50,7 @@ public class GChatCommand extends CommandBase {
 
     @Override
     public void processCommand(ICommandSender sender, String[] args) {
+        MinecraftForge.EVENT_BUS.post(new ClientChatReceivedEvent((byte) 0, new ChatComponentText("§2Guild > §7Confusinguser§f: TEST")));
         Minecraft.getMinecraft().thePlayer.sendChatMessage("/gc " + String.join(" ", args));
     }
 }

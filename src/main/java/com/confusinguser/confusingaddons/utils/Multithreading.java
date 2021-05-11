@@ -23,7 +23,7 @@ public class Multithreading {
         }
     });
 
-    public static void schedule(Runnable r, long initialDelay, long delay, TimeUnit unit) {
+    public static void scheduleAtFixedRate(Runnable r, long initialDelay, long delay, TimeUnit unit) {
         if (scheduledExecutor.isTerminated()) scheduledExecutor = Executors.newScheduledThreadPool(3, new ThreadFactory() {
             private final AtomicInteger counter = new AtomicInteger(0);
 
@@ -33,6 +33,18 @@ public class Multithreading {
             }
         });
         scheduledExecutor.scheduleAtFixedRate(r, initialDelay, delay, unit);
+    }
+
+    public static void scheduleOnce(Runnable r, long delay, TimeUnit unit) {
+        if (scheduledExecutor.isTerminated()) scheduledExecutor = Executors.newScheduledThreadPool(3, new ThreadFactory() {
+            private final AtomicInteger counter = new AtomicInteger(0);
+
+            @Override
+            public Thread newThread(Runnable r) {
+                return new Thread(r, "Thread " + counter.incrementAndGet());
+            }
+        });
+        scheduledExecutor.schedule(r, delay, unit);
     }
 
     public static void runAsync(Runnable runnable) {
