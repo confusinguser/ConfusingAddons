@@ -1,13 +1,13 @@
-package com.confusinguser.confusingaddons.asm;
+package com.confusinguser.confusingaddons.asm.transformers.method;
 
-import com.confusinguser.confusingaddons.asm.core.ITransformer;
+import com.confusinguser.confusingaddons.asm.core.ITransformerMethod;
 import com.confusinguser.confusingaddons.asm.utils.ASMUtils;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.Opcodes;
 
 import java.util.Iterator;
 
-public class EntityRendererTransformer implements ITransformer {
+public class EntityRendererTransformerMethod implements ITransformerMethod {
     @Override
     public boolean transformMethod(MethodNode method, String methodName, String methodDesc) {
         if (methodName.equals("hurtCameraEffect") || methodName.equals("func_78482_e")) { // MC-26678 Damage wobble no longer shows direction of incoming damage

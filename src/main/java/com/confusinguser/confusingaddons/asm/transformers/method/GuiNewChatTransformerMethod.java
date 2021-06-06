@@ -1,10 +1,10 @@
-package com.confusinguser.confusingaddons.asm;
+package com.confusinguser.confusingaddons.asm.transformers.method;
 
-import com.confusinguser.confusingaddons.asm.core.ITransformer;
+import com.confusinguser.confusingaddons.asm.core.ITransformerMethod;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
-public class GuiNewChatTransformer implements ITransformer {
+public class GuiNewChatTransformerMethod implements ITransformerMethod {
     @Override
     public boolean transformMethod(MethodNode method, String methodName, String methodDesc) { // TODO Extensive testing
         if (methodName.equals("printChatMessageWithOptionalDeletion") || methodName.equals("func_146234_a")) { // Fix chat formatting from some mods disappearing on new line
@@ -21,6 +21,6 @@ public class GuiNewChatTransformer implements ITransformer {
 
     @Override
     public String getTargetClassName() {
-        return "net.minecraft.client.gui.GuiNewChatTransformer";
+        return "net.minecraft.client.gui.GuiNewChatTransformerMethod";
     }
 }

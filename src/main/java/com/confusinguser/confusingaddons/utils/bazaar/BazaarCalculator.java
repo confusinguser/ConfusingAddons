@@ -50,13 +50,13 @@ public class BazaarCalculator {
                 if (bazaarProduct.getNPCSellPrice() > 0 && sellPrice > 0) {
                 }
             } else if (method.getStrategy() == MoneyMakingMethod.Strategy.MARGIN_FLIP) {
-                System.out.printf("Margin flip %s\n  Buy Price: %s%s%s insta-sells in the last 7d\n  Sell Price: %s\n  Profit: %s%%\n",
-                        productName,
-                        LangUtils.useIntVersion(sellPrice) ? (int) sellPrice : sellPrice,
-                        LangUtils.alignString("  Buy Price: " + bazaarProduct.getSellPrice(), 30, 2),
-                        bazaarProduct.getInstaSells(),
-                        LangUtils.useIntVersion(buyPrice) ? (int) buyPrice : buyPrice,
-                        LangUtils.useIntVersion(method.getProfit()) ? (int) method.getProfit() : method.getProfit());
+//                System.out.printf("Margin flip %s\n  Buy Price: %s%s%s insta-sells in the last 7d\n  Sell Price: %s\n  Profit: %s%%\n",
+//                        productName,
+//                        LangUtils.useIntVersion(sellPrice) ? (int) sellPrice : sellPrice,
+//                        LangUtils.alignString("  Buy Price: " + bazaarProduct.getSellPrice(), 30, 2),
+//                        bazaarProduct.getInstaSells(),
+//                        LangUtils.useIntVersion(buyPrice) ? (int) buyPrice : buyPrice,
+//                        LangUtils.useIntVersion(method.getProfit()) ? (int) method.getProfit() : method.getProfit());
             }
         }
     }

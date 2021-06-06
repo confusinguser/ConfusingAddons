@@ -2,7 +2,11 @@ plugins {
     id 'java'
     id 'maven'
     id 'net.minecraftforge.gradle.forge' version '581a86dcbe'
-    id 'com.github.johnrengelman.shadow' version '6.1.0'
+    id 'com.github.johnrengelman.shadow' version '2.0.4'
+}
+compileJava.options.encoding = 'UTF-8'
+tasks.withType(JavaCompile) {
+    options.encoding = 'UTF-8'
 }
 
 apply plugin: 'net.minecraftforge.gradle.forge'
@@ -16,14 +20,20 @@ repositories {
 version = "1.0"
 group = "com.confusinguser.confusingaddons"
 archivesBaseName = "ConfusingAddons"
-compileJava.options.encoding = 'UTF-8'
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }
 
-sourceCompatibility = 1.8
-targetCompatibility = 1.8
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+sourceSets {
+    main {
+        output.resourcesDir = java.classesDirectory
+    }
+}
+
 minecraft {
     version = "1.8.9-11.15.1.1722"
     runDir = "run"
@@ -36,15 +46,18 @@ minecraft {
 dependencies {
     shadow 'com.github.HypixelDev.PublicAPI:Java:2.0.0'
     compile 'com.github.HypixelDev.PublicAPI:Java:2.0.0'
+    // jsoup HTML parser library @ https://jsoup.org/
+    shadow 'org.jsoup:jsoup:1.13.1'
+    compile 'org.jsoup:jsoup:1.13.1'
 }
 
 jar {
-    archiveName = archivesBaseName + "-" + version + ".jar"
+    archiveFileName = archivesBaseName + "-" + project.version + ".jar"
     enabled = false
 }
 
 shadowJar {
-    archiveName = archivesBaseName + "-" + version + ".jar"
+    archiveFileName = archivesBaseName + "-" + project.version + ".jar"
     manifest {
         attributes FMLCorePlugin: "com.confusinguser.confusingaddons.asm.core.FMLLoadingPlugin",
                 FMLAT: "confusingaddons_at.cfg",
@@ -52,39 +65,54 @@ shadowJar {
                 ForceLoadAsMod: true,
                 FMLCorePluginContainsFMLMod: true
     }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
-processResources {
+processResources.doLast {
+
+    description 'Copies resource files to dir FML expects resourcePack to be'
+
     // this will ensure that this task is redone when the versions change.
     inputs.property "version", project.version
     inputs.property "mcversion", project.minecraft.version
 
-    // replace stuff in mcmod.info, nothing else
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
+    ext.srcFiles = "$projectDir/src/main/resources"
+    ext.destDir = "$projectDir/build/classes/main"
 
+    // registering inputs & outputs allow gradle to skip if UP-TO-DATE
+    inputs.files srcFiles
+    outputs.dir destDir
+
+    println 'starting processResources'
+    println 'srcFiles: ' + srcFiles
+    println 'destDir: ' + destDir
+
+    copy {
+        // replace stuff in mcmod.info, nothing else
+        from(srcFiles)
+        into(destDir)
+        include 'mcmod.info'
         // replace version and mcversion
-        expand 'version':project.version, 'mcversion':project.minecraft.version
+        expand 'version': project.version, 'mcversion': project.minecraft.version
+
     }
 
-    rename '(.+_at.cfg)', 'META-INF/$1'
-
-    // copy everything else, thats not the mcmod.info
-    from(sourceSets.main.resources.srcDirs) {
+    copy {
+        // copy everything else, thats not the mcmod.info
+        from(srcFiles)
+        into(destDir)
         exclude 'mcmod.info'
     }
 }
 
-tasks.build.dependsOn shadowJar
+task copyAssets(type: Copy) {
+    from "${projectDir}/src/main/resources/assets"
+    into "${projectDir}/classes/production/ConfusingAddons.main/assets"
+}
+
+tasks.assemble.finalizedBy(tasks.copyAssets)
 
 artifacts {
     archives shadowJar
 }
 
-reobf {
-    shadowJar {
-        mappingType = "SEARGE"
-    }
-}
-tasks.reobfShadowJar.mustRunAfter shadowJar
-tasks.build.dependsOn reobfShadowJar

@@ -1,12 +1,12 @@
-package com.confusinguser.confusingaddons.asm;
+package com.confusinguser.confusingaddons.asm.transformers.method;
 
-import com.confusinguser.confusingaddons.asm.core.ITransformer;
+import com.confusinguser.confusingaddons.asm.core.ITransformerMethod;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 import java.util.Iterator;
 
-public class ItemStackTransformer implements ITransformer {
+public class ItemStackTransformerMethod implements ITransformerMethod {
 
     @Override
     public boolean transformMethod(MethodNode method, String methodName, String methodDesc) {

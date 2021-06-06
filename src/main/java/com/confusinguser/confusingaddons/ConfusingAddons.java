@@ -39,7 +39,7 @@ public class ConfusingAddons {
         DONE Desc tooltips, shorter feature names
         For some reason back button goes 2 wrong page when clicking on diff parts
     */
-    public static final String MODID = "ConfusingAddons";
+    public static final String MODID = "confusingaddons";
     public static final String VERSION = "1.0";
     public static final String MOD_NAME = "ConfusingAddons";
     private static ConfusingAddons instance;

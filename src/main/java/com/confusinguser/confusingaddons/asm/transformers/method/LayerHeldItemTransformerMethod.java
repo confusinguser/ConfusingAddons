@@ -1,13 +1,13 @@
-package com.confusinguser.confusingaddons.asm;
+package com.confusinguser.confusingaddons.asm.transformers.method;
 
-import com.confusinguser.confusingaddons.asm.core.ITransformer;
+import com.confusinguser.confusingaddons.asm.core.ITransformerMethod;
 import com.confusinguser.confusingaddons.asm.utils.ASMUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 import java.util.Iterator;
 
-public class LayerHeldItemTransformer implements ITransformer {
+public class LayerHeldItemTransformerMethod implements ITransformerMethod {
     @Override
     public boolean transformMethod(MethodNode method, String methodName, String methodDesc) {
         if (methodName.equals("doRenderLayer") || methodName.equals("func_177141_a")) { // MC-30481 Enchanted fishing rod doesn't glow when fishing

@@ -1,6 +1,6 @@
 [
   {
-    "modid": "ConfusingAddons",
+    "modid": "confusingaddons",
     "name": "ConfusingAddons",
     "description": "Mod with minecraft bugfixes and useful client-side features for playing on 1.8 servers!",
     "version": "${version}",

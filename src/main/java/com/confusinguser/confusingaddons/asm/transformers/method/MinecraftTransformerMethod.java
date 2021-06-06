@@ -1,13 +1,13 @@
-package com.confusinguser.confusingaddons.asm;
+package com.confusinguser.confusingaddons.asm.transformers.method;
 
-import com.confusinguser.confusingaddons.asm.core.ITransformer;
+import com.confusinguser.confusingaddons.asm.core.ITransformerMethod;
 import com.confusinguser.confusingaddons.asm.utils.ASMUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 import java.util.Iterator;
 
-public class MinecraftTransformer implements ITransformer {
+public class MinecraftTransformerMethod implements ITransformerMethod {
     private int methodsFound = 0;
 
     @Override

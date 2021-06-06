@@ -1,13 +1,13 @@
-package com.confusinguser.confusingaddons.asm;
+package com.confusinguser.confusingaddons.asm.transformers.method;
 
-import com.confusinguser.confusingaddons.asm.core.ITransformer;
+import com.confusinguser.confusingaddons.asm.core.ITransformerMethod;
 import com.confusinguser.confusingaddons.asm.utils.ASMUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 import java.util.Iterator;
 
-public class RenderPlayerTransformer implements ITransformer {
+public class RenderPlayerTransformerMethod implements ITransformerMethod {
     @Override
     public boolean transformMethod(MethodNode method, String methodName, String methodDesc) {
         if (methodName.equals("renderRightArm") || methodName.equals("func_177138_b")) { // MC-1349 While riding a pig, horse or minecart and using F5, the hand of your character is misplaced

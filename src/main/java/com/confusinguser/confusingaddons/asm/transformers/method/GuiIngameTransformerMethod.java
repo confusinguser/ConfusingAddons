@@ -1,13 +1,13 @@
-package com.confusinguser.confusingaddons.asm;
+package com.confusinguser.confusingaddons.asm.transformers.method;
 
-import com.confusinguser.confusingaddons.asm.core.ITransformer;
+import com.confusinguser.confusingaddons.asm.core.ITransformerMethod;
 import com.confusinguser.confusingaddons.asm.utils.ASMUtils;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.tree.*;
 
 import java.util.Iterator;
 
-public class GuiIngameTransformer implements ITransformer {
+public class GuiIngameTransformerMethod implements ITransformerMethod {
     @Override
     public boolean transformMethod(MethodNode method, String methodName, String methodDesc) {
         if (methodName.equals("renderBossHealth") || methodName.equals("func_73828_d")) { // MC-4474 Boss Health Bar Temporarily Viewable after Respawn and Loading Another World

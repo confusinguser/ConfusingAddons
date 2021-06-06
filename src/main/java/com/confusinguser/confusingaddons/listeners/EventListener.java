@@ -28,8 +28,6 @@ import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 import net.minecraftforge.fml.common.network.FMLNetworkEvent;
 import org.lwjgl.input.Keyboard;
-import org.lwjgl.input.Mouse;
-import org.lwjgl.opengl.Display;
 
 import java.awt.*;
 import java.awt.datatransfer.StringSelection;
@@ -81,19 +79,19 @@ public class EventListener {
             guiToOpen = null;
         }
 
-        if (tickCounter % 40 == 0) {
-            if (!Display.isActive() && (!this.mc.gameSettings.touchscreen || !Mouse.isButtonDown(1))) {
-                if (displayActiveLastFrame) {
-                    realFpsLimit = mc.gameSettings.limitFramerate;
-                    mc.gameSettings.limitFramerate = 5;
-                }
-            } else {
-                if (!displayActiveLastFrame)
-                    mc.gameSettings.limitFramerate = realFpsLimit;
-            }
-            displayActiveLastFrame = Display.isActive();
-        }
-        tickCounter++;
+//        if (tickCounter % 2 == 0) {
+//            if (!Display.isActive() && (!this.mc.gameSettings.touchscreen || !Mouse.isButtonDown(1))) {
+//                if (displayActiveLastFrame) {
+//                    realFpsLimit = mc.gameSettings.limitFramerate;
+//                    mc.gameSettings.limitFramerate = 5;
+//                }
+//            } else {
+//                if (!displayActiveLastFrame)
+//                    mc.gameSettings.limitFramerate = realFpsLimit;
+//            }
+//            displayActiveLastFrame = Display.isActive();
+//        }
+//        tickCounter++;
     }
 
     @SubscribeEvent

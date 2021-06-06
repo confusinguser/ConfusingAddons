@@ -16,12 +16,14 @@ import net.minecraftforge.client.event.ClientChatReceivedEvent;
 import net.minecraftforge.common.MinecraftForge;
 import org.lwjgl.input.Keyboard;
 import org.lwjgl.input.Mouse;
+import org.lwjgl.opengl.GL11;
 import org.lwjgl.util.vector.Vector2f;
 
 import java.awt.*;
 import java.awt.datatransfer.DataFlavor;
 import java.awt.datatransfer.Transferable;
 import java.awt.datatransfer.UnsupportedFlavorException;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -47,7 +49,7 @@ public class Utils {
     private static final String batphoneButtonMessage = "§2§l[OPEN MENU]";
     private static final String slayerBossSlainMessage = "§6§lNICE! SLAYER BOSS SLAIN!";
     //Atomic because needs to be accessed by another thread in real time by LiveGcConnectionManager
-    private static AtomicBoolean onHypixel = new AtomicBoolean();
+    private static final AtomicBoolean onHypixel = new AtomicBoolean();
 
     private static final ConfusingAddons main = ConfusingAddons.getInstance();
     private static final String USER_AGENT = "Mozilla/5.0";
@@ -396,5 +398,34 @@ public class Utils {
 
     public static boolean inBoundingBox(Vector2f pos, Vector2f bb1, Vector2f bb2) {
         return pos.x > bb1.x && pos.y > bb1.y && pos.x < bb2.x && pos.y < bb2.y;
+    }
+
+    public static int scaledCoords(float coordinate, float scale) {
+        return (int) (coordinate / scale);
+    }
+
+    /**
+     * https://stackoverflow.com/a/9417836/8004308
+     * @author Ocracoke
+     */
+    public static BufferedImage resize(BufferedImage img, int newW, int newH) {
+        Image tmp = img.getScaledInstance(newW, newH, Image.SCALE_SMOOTH);
+        BufferedImage dimg = new BufferedImage(newW, newH, BufferedImage.TYPE_INT_ARGB);
+
+        Graphics2D g2d = dimg.createGraphics();
+        g2d.drawImage(tmp, 0, 0, null);
+        g2d.dispose();
+
+        return dimg;
+    }
+
+    public static void drawTexturedModalRectResizedTexture(int x, int y, int texXStart, int texYStart, int texXEnd, int texYEnd, int realWidth, int realHeight) {
+        GL11.glBegin(GL11.GL_QUADS);
+        GL11.glTexCoord2f((float) texXStart/realWidth, (float) texYStart/realHeight); GL11.glVertex3f(x, y, 0.0f);
+        GL11.glTexCoord2f((float) texXStart/realWidth, (float) texYEnd/realHeight); GL11.glVertex3f(x, y+texYEnd-texYStart, 0.0f);
+        GL11.glTexCoord2f((float) texXEnd/realWidth, (float) texYEnd/realHeight); GL11.glVertex3f(x+texXEnd-texXStart, y+texYEnd-texYStart, 0.0f);
+        GL11.glTexCoord2f((float) texXEnd/realWidth, (float) texYStart/realHeight); GL11.glVertex3f(x+texXEnd-texXStart, y, 0.0f);
+        GL11.glEnd();
+        GL11.glFlush();
     }
 }
